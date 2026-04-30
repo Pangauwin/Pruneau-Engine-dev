@@ -1,0 +1,447 @@
+#include "asset/asset_manager.h"
+#include "asset/asset.h"
+
+#include <memory>
+#include <string>
+
+#include <fstream>
+#include <sstream>
+
+#include <filesystem>
+
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+
+#include <glm/glm.hpp>
+
+#include <stb_image.h>
+
+#include "core/application.h"
+#include "glm/fwd.hpp"
+#include "renderer/mesh.h"
+
+static bool EndsWith(const std::string& value, const std::string& ending);
+static glm::mat4 ConvertMatrix(const aiMatrix4x4& m);
+
+namespace Core {
+	std::unordered_map<AssetID, std::shared_ptr<Asset>> AssetManager::m_assets;
+	std::unordered_map<FolderID, std::unique_ptr<AssetFolder>> AssetManager::m_folders;
+
+	AssetID AssetManager::s_next_asset_id = 0;
+	FolderID AssetManager::s_next_folder_id = 0;
+}
+
+std::shared_ptr<Core::ShaderAsset> Core::AssetManager::default_shader;
+std::shared_ptr<Core::ShaderAsset> Core::AssetManager::error_shader;
+std::shared_ptr<Core::MaterialAsset> Core::AssetManager::default_material;
+std::shared_ptr<Core::MaterialAsset> Core::AssetManager::error_material;
+
+struct ParsedMesh {
+	std::vector<Renderer::Vertex> vertices;
+	std::vector<uint32_t> indices;
+	int materialIndex = 0;
+	glm::mat4 transform = glm::mat4(1.0f);
+};
+
+struct ParsedMaterial
+{
+	std::vector<std::string> diffuse_textures;
+};
+
+struct ParsedModel
+{
+	std::vector<ParsedMesh> meshes;
+	std::vector<ParsedMaterial> materials;
+};
+
+static void ParseMaterials(const aiScene* _scene, ParsedModel& _model);
+static void ParseNode(aiNode* node, const aiScene* scene, const glm::mat4& _parent_transform, ParsedModel& _model);
+static ParsedMesh ParseMesh(aiMesh* _mesh);
+
+void Core::AssetManager::Init()
+{
+	AssetFolder _folder;
+	_folder.id = s_next_folder_id;
+	_folder.name = "Assets";
+	_folder.parent = 0;
+
+	m_folders[s_next_folder_id] = std::make_unique<AssetFolder>(_folder);
+
+
+	// Import default assets
+	AssetManager::SetDefaultShader("ressources/shaders/default.vert");
+	AssetManager::SetErrorShader("ressources/shaders/error.vert");
+}
+
+Core::AssetID Core::AssetManager::ImportAsset(const std::string& path, FolderID _folder)
+{
+	AssetID id = 0;
+
+	if (EndsWith(path, ".obj") || EndsWith(path, ".gltf") || EndsWith(path, ".glb") || EndsWith(path, ".fbx"))
+	{
+		id = ImportModel(path);
+	}
+
+	else if (EndsWith(path, ".png") || EndsWith(path, ".jpg") || EndsWith(path, ".bmp"))
+	{
+		id = ImportTexture(path);
+	}
+
+	else if (EndsWith(path, ".vert") || EndsWith(path, ".frag"))
+	{
+		id = ImportShader(path);
+	}
+
+	else
+	{
+		Core::LogMessageError("Asset format not handled:" + path);
+		return 0;
+	}
+
+	if (!id)
+		Core::LogMessageError("Could not import asset:" + path);
+	
+	Core::LogMessageInfo("Asset Imported: " + path);	
+	AssignAssetToFolder(id, _folder);
+
+	GetAsset<Asset>(id)->name = std::filesystem::path(path).stem().string();
+
+	return id;
+}
+
+void Core::AssetManager::RemoveAsset(AssetID _id)
+{
+	Core::AssetManager::m_assets.erase(_id);
+}
+
+Core::FolderID Core::AssetManager::CreateFolder(const std::string& _name, FolderID _parent)
+{
+	s_next_folder_id++;
+
+	AssetFolder _folder;
+	_folder.id = s_next_folder_id;
+	_folder.name = _name;
+	_folder.parent = _parent;
+
+	m_folders[s_next_folder_id] = std::make_unique<AssetFolder>(_folder);
+	m_folders[_parent]->children.push_back(m_folders[s_next_folder_id].get());
+
+	return s_next_folder_id;
+}
+
+Core::AssetFolder& Core::AssetManager::GetFolder(FolderID _id)
+{
+	if (m_folders.count(_id))
+	{
+		return *m_folders[_id].get();
+	}
+
+	return *m_folders[0].get();
+}
+
+void Core::AssetManager::AssignAssetToFolder(AssetID _asset_id, FolderID _folder_id)
+{
+	std::shared_ptr<Asset> _asset = GetAsset<Asset>(_asset_id);
+	_asset->folder = _folder_id;
+	GetFolder(_folder_id).assets.push_back(_asset);
+}
+
+void Core::AssetManager::SetDefaultShader(const char* _path)
+{
+	AssetID default_shader_ID = ImportAsset(_path);
+	default_shader = GetAsset<ShaderAsset>(default_shader_ID);
+	if (!default_material.get())
+	{
+		s_next_asset_id++;
+		default_material = std::make_shared<MaterialAsset>("Default Material", s_next_asset_id, default_shader);
+		m_assets[s_next_asset_id] = default_material;
+		AssignAssetToFolder(s_next_asset_id, 0);
+	}
+	else
+	{
+		AssetID default_material_ID = default_material->GetID();
+		default_material = std::make_shared<MaterialAsset>("Default Material", default_material_ID, default_shader);
+	}
+}
+
+void Core::AssetManager::SetErrorShader(const char* _path)
+{
+	AssetID error_shader_ID = ImportAsset(_path);
+	error_shader = GetAsset<ShaderAsset>(error_shader_ID);
+	if (!error_material.get())
+	{
+		s_next_asset_id++;
+		error_material = std::make_shared<MaterialAsset>("Error Material", s_next_asset_id, error_shader);
+		m_assets[s_next_asset_id] = error_material;
+		AssignAssetToFolder(s_next_asset_id, 0);
+	}
+	else
+	{
+		AssetID error_material_ID = default_material->GetID();
+		error_material = std::make_shared<MaterialAsset>("Error Material", error_material_ID, error_shader);
+	}
+}
+
+Core::AssetID Core::AssetManager::ImportModel(const std::string& _path)
+{
+	Assimp::Importer importer;
+
+	unsigned int import_flags = 
+		aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_CalcTangentSpace | aiProcess_JoinIdenticalVertices | 
+		aiProcess_ImproveCacheLocality | aiProcess_GlobalScale | aiProcess_FlipUVs;
+
+	const aiScene* scene = importer.ReadFile(_path, import_flags);
+
+	if (!scene || !scene->mRootNode)
+	{
+		Core::LogMessage("Assimp error: " + std::string(importer.GetErrorString()));
+		return 0;
+	}
+
+	ParsedModel parsed_model;
+
+	ParseMaterials(scene, parsed_model);
+	ParseNode(scene->mRootNode, scene, glm::mat4(1.0f), parsed_model);
+
+	return BuildModelAsset(parsed_model);
+
+	//TODO : apply the right shader to the meshes
+}
+
+static void ParseMaterials(const aiScene* _scene, ParsedModel& _model)
+{
+	for (unsigned int i = 0; i < _scene->mNumMaterials; i++)
+	{
+		ParsedMaterial mat;
+
+		aiMaterial* material = _scene->mMaterials[i];
+
+		aiString path;
+
+		for (unsigned int j = 0; j < material->GetTextureCount(aiTextureType_DIFFUSE); j++)
+		{
+			material->GetTexture(aiTextureType_DIFFUSE, j, &path);
+			mat.diffuse_textures.push_back(path.C_Str());
+		}
+
+		_model.materials.push_back(mat);
+	}
+}
+
+static void ParseNode(aiNode* node, const aiScene* scene, const glm::mat4& _parent_transform, ParsedModel& _model)
+{
+	glm::mat4 local_transform = ConvertMatrix(node->mTransformation);
+	glm::mat4 global_transform = _parent_transform * local_transform;
+
+	for (unsigned int i = 0; i < node->mNumMeshes; i++)
+	{
+		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
+
+		ParsedMesh parsed_mesh = ParseMesh(mesh);
+		parsed_mesh.transform = global_transform;
+
+		_model.meshes.push_back(parsed_mesh);
+	}
+
+	for (unsigned int i = 0; i < node->mNumChildren; i++)
+	{
+		ParseNode(node->mChildren[i], scene, global_transform, _model);
+	}
+}
+
+static ParsedMesh ParseMesh(aiMesh* _mesh)
+{
+	ParsedMesh parsed_mesh;
+
+	for (unsigned int i = 0; i < _mesh->mNumVertices; i++)
+	{
+		Renderer::Vertex vertex{};
+
+		vertex.position = {
+			_mesh->mVertices[i].x,
+			_mesh->mVertices[i].y,
+			_mesh->mVertices[i].z
+		};
+
+		if (_mesh->HasNormals())
+		{
+			vertex.normal = {
+				_mesh->mNormals[i].x,
+				_mesh->mNormals[i].y,
+				_mesh->mNormals[i].z
+			};
+		}
+
+		if (_mesh->HasTextureCoords(0))
+		{
+			vertex.uv_coord = {
+				_mesh->mTextureCoords[0][i].x,
+				_mesh->mTextureCoords[0][i].y
+			};
+		}
+		else {
+			vertex.uv_coord = glm::vec2(0.0f);
+		}
+
+		parsed_mesh.vertices.push_back(vertex);
+	}
+
+	for (unsigned int i = 0; i < _mesh->mNumFaces; i++)
+	{
+		aiFace& face = _mesh->mFaces[i];
+
+		for (unsigned int j = 0; j < face.mNumIndices; j++)
+		{
+			parsed_mesh.indices.push_back(face.mIndices[j]);
+		}
+	}
+
+	parsed_mesh.materialIndex = _mesh->mMaterialIndex;
+
+	return parsed_mesh;
+}
+
+Core::AssetID Core::AssetManager::BuildModelAsset(const ParsedModel& parsed)
+{
+	std::vector<std::tuple<glm::mat4, std::shared_ptr<Core::MeshAsset>>> _model_mesh_container;
+
+	for (const ParsedMesh& mesh : parsed.meshes)
+	{
+		s_next_asset_id++;
+
+		auto mesh_asset = std::make_shared<MeshAsset>(
+			"Mesh_" + std::to_string(s_next_asset_id),
+			s_next_asset_id,
+			mesh.vertices,
+			mesh.indices,
+			default_material
+		);
+
+		m_assets[s_next_asset_id] = mesh_asset;
+
+		std::tuple<glm::mat4, std::shared_ptr<Core::MeshAsset>> _t;
+
+		_t = std::make_tuple(mesh.transform, mesh_asset);
+
+		_model_mesh_container.push_back(_t);
+	}
+
+	s_next_asset_id++;
+
+	auto model = std::make_shared<ModelAsset>(
+		"Model_" + std::to_string(s_next_asset_id),
+		s_next_asset_id,
+		_model_mesh_container
+	);
+
+	m_assets[s_next_asset_id] = model;
+
+	return s_next_asset_id;
+}
+
+Core::AssetID Core::AssetManager::ImportTexture(const std::string& path)
+{
+	int width, height, channel_nb;
+	unsigned char* data = stbi_load(path.c_str(), &width, &height, &channel_nb, 4);
+
+	if (!data)
+	{
+		stbi_image_free(data);
+		return 0;
+	}
+
+	s_next_asset_id++;
+	Core::AssetManager::m_assets[s_next_asset_id] = std::make_shared<TextureAsset>("Texture_" + std::to_string(s_next_asset_id), s_next_asset_id, data, width, height);
+
+	stbi_image_free(data);
+
+	return s_next_asset_id;
+}
+
+Core::AssetID Core::AssetManager::ImportShader(const std::string& path)
+{
+	std::string vertex_shader_file_path = path;
+	std::string fragment_shader_file_path = path;
+
+	if (EndsWith(path, ".vert"))
+	{
+		size_t pos = fragment_shader_file_path.rfind(".vert");
+		fragment_shader_file_path.replace(pos, 5, ".frag");
+	}
+
+	else if (EndsWith(path, ".frag"))
+	{
+		size_t pos = vertex_shader_file_path.rfind(".frag");
+		vertex_shader_file_path.replace(pos, 5, ".vert");
+	}
+
+	else
+	{
+		Core::LogMessage("Could not import Shader, make sure the filename ends with .vert or .frag");
+		return 0;
+	}
+
+	std::string vertex_shader, fragment_shader;
+
+	std::ifstream vertex_file(vertex_shader_file_path, std::ios::in | std::ios::binary);
+	std::ostringstream vertex_shader_contents;
+
+	if (!vertex_file)
+	{
+		Core::LogMessage("Failed to open the vertex shader file");
+		return 0;
+	}
+
+	vertex_shader_contents << vertex_file.rdbuf();
+	vertex_shader = vertex_shader_contents.str();
+
+	std::ifstream fragment_file(fragment_shader_file_path, std::ios::in | std::ios::binary);
+	std::ostringstream fragment_shader_contents;
+
+	if (!fragment_file)
+	{
+		Core::LogMessage("Failed to open the fragment shader file");
+		return 0;
+	}
+
+	fragment_shader_contents << fragment_file.rdbuf();
+	fragment_shader = fragment_shader_contents.str();
+
+	s_next_asset_id++;
+	Core::AssetManager::m_assets[s_next_asset_id] = std::make_shared<ShaderAsset>("Shader_" + std::to_string(s_next_asset_id), s_next_asset_id, vertex_shader.c_str(), fragment_shader.c_str());
+
+	return s_next_asset_id;
+}
+
+Core::AssetID Core::AssetManager::CreateMaterial(std::shared_ptr<ShaderAsset> _shader)
+{
+	s_next_asset_id++;
+	Core::AssetManager::m_assets[s_next_asset_id] = std::make_shared<MaterialAsset>("Material_" + std::to_string(s_next_asset_id), s_next_asset_id, _shader);
+	AssignAssetToFolder(s_next_asset_id, 0);
+
+	return s_next_asset_id;
+}
+
+static bool EndsWith(const std::string& value, const std::string& ending)
+{
+	if (ending.size() > value.size())
+		return false;
+
+	return std::equal(
+		ending.rbegin(), ending.rend(),
+		value.rbegin()
+	);
+}
+
+static glm::mat4 ConvertMatrix(const aiMatrix4x4& m)
+{
+	glm::mat4 mat(
+		m.a1, m.a2, m.a3, m.a4,
+		m.b1, m.b2, m.b3, m.b4,
+		m.c1, m.c2, m.c3, m.c4,
+		m.d1, m.d2, m.d3, m.d4
+	);
+
+	return glm::transpose(mat);
+}

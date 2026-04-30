@@ -6,9 +6,7 @@ set(GLFW_INSTALL OFF CACHE BOOL "" FORCE)
 add_subdirectory(glfw)
 
 # glad
-add_library(glad STATIC
-    glad/src/glad.c
-)
+add_library(glad STATIC glad/src/glad.c)
 target_include_directories(glad PUBLIC glad/include)
 
 # ImGui
@@ -20,45 +18,32 @@ add_library(imgui STATIC
     imgui/backends/imgui_impl_glfw.cpp
     imgui/backends/imgui_impl_opengl3.cpp
 )
-target_include_directories(imgui PUBLIC
-    imgui
-    imgui/backends
-)
+target_include_directories(imgui PUBLIC imgui imgui/backends)
 target_link_libraries(imgui PUBLIC glfw glad)
 
 # ImGuizmo
-add_library(imguizmo STATIC
-    imguizmo/ImGuizmo.cpp
-)
+add_library(imguizmo STATIC imguizmo/ImGuizmo.cpp)
 target_include_directories(imguizmo PUBLIC imguizmo)
 target_link_libraries(imguizmo PUBLIC imgui)
 
-# stb (header-only)
+# stb
 add_library(stb INTERFACE)
 target_include_directories(stb INTERFACE stb)
 
-# glm (header-only)
+# glm
 add_library(glm INTERFACE)
 target_include_directories(glm INTERFACE glm)
 
-# Assimp (disabling test tools)
+# Assimp
 set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(ASSIMP_BUILD_ASSIMP_TOOLS OFF CACHE BOOL "" FORCE)
 set(ASSIMP_BUILD_SAMPLES OFF CACHE BOOL "" FORCE)
-
 set(ASSIMP_BUILD_ALL_IMPORTERS_BY_DEFAULT OFF CACHE BOOL "" FORCE)
-
 set(ASSIMP_BUILD_OBJ_IMPORTER  ON CACHE BOOL "" FORCE)
 set(ASSIMP_BUILD_FBX_IMPORTER  ON CACHE BOOL "" FORCE)
 set(ASSIMP_BUILD_GLTF_IMPORTER ON CACHE BOOL "" FORCE)
-
 set(ASSIMP_BUILD_EXPORTERS OFF CACHE BOOL "" FORCE)
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
-
-set(ASSIMP_BUILD_ZLIB ON CACHE BOOL "" FORCE)
-set(ASSIMP_NO_EXPORT ON CACHE BOOL "" FORCE)   
-set(ASSIMP_WARNINGS_AS_ERRORS OFF CACHE BOOL "" FORCE)
-
 set(ASSIMP_INSTALL OFF CACHE BOOL "" FORCE)
 
 add_subdirectory(assimp)

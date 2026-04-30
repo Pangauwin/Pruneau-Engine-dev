@@ -1,20 +1,22 @@
-set(ENGINE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+set(ENGINE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
-file(GLOB_RECURSE ENGINE_SOURCES CONFIGURE_DEPENDS
-    "${ENGINE_DIR}/*.cpp"
+file(GLOB_RECURSE ENGINE_PUBLIC
+    "${ENGINE_DIR}/public/*.h"
 )
 
-file(GLOB_RECURSE ENGINE_HEADERS
-    "${ENGINE_DIR}/*.h"
+file(GLOB_RECURSE ENGINE_INTERNAL
+    "${ENGINE_DIR}/internal/*.cpp"
+    "${ENGINE_DIR}/internal/*.h"
 )
 
 add_library(PruneauEngine STATIC
-    ${ENGINE_SOURCES}
-    ${ENGINE_HEADERS}
+    ${ENGINE_INTERNAL}
+    ${ENGINE_PUBLIC}
 )
 
 target_include_directories(PruneauEngine
-    PUBLIC ${ENGINE_DIR}
+    PUBLIC  ${ENGINE_DIR}/public
+    PRIVATE ${ENGINE_DIR}/internal
 )
 
 target_link_libraries(PruneauEngine
@@ -27,6 +29,8 @@ target_link_libraries(PruneauEngine
         imgui
         imguizmo
 )
+
+# TODO : Remove imgui & imguizmo (move in editor)
 
 if (UNIX)
     find_package(OpenGL REQUIRED)

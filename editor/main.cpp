@@ -1,4 +1,5 @@
 #include "core/application.h"
+#include "core/engine_layer.h"
 
 int main()
 {
@@ -8,6 +9,7 @@ int main()
 	app_params.window_params.title = "Pruneau Renderer v1";
 
 	Core::Application app(app_params);
+	app.PushLayer(new EngineLayer::EngineLayer());
 	app.Run();
 
 	return 0;

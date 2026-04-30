@@ -76,20 +76,10 @@ Assets used in this scene : [PSX style office pack](https://valsekamerplant.itch
 Prebuilt binairies will arrive as soon as the first version (even if unstable) is released. As explained, it will first come on Windows and then on Linux.
 There will be one binary for each major version release.
 
+## Use of AI
+
+This projects does contain AI code, but only in the configuration files (such as CMake files or git files). The whole source code is written by human.
+
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
-
-
-
-
-
-
-
-
-
-
-
-
-
-

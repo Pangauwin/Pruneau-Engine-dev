@@ -1,20 +1,17 @@
-set(EDITOR_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+set(EDITOR_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
-file(GLOB_RECURSE EDITOR_SOURCES CONFIGURE_DEPENDS
+file(GLOB_RECURSE EDITOR_SRC
     "${EDITOR_DIR}/*.cpp"
 )
 
 add_executable(PruneauEditor
-    ${EDITOR_SOURCES}
+    ${EDITOR_SRC}
 )
 
 target_link_libraries(PruneauEditor
-    PRIVATE
-        PruneauEngine
-        imgui
-        imguizmo
+    PRIVATE PruneauEngine imgui imguizmo
 )
 
 target_include_directories(PruneauEditor
-    PRIVATE ${EDITOR_DIR}
+    PRIVATE ${CMAKE_SOURCE_DIR}/engine/public
 )
