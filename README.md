@@ -27,7 +27,7 @@ First of all, I want to thanks all the developers of the librairies used in this
 
 ## Overview
 
-<img width="1854" height="1011" alt="image" src="https://github.com/user-attachments/assets/87b7ab06-7b61-4732-969d-7af1b73a13e7" />
+<img width="1853" height="1011" alt="image" src="https://github.com/user-attachments/assets/dc7966a2-4d67-4b24-b6c6-1e896b830da1" />
 
 ## Getting Started
 
