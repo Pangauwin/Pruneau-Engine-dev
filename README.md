@@ -28,7 +28,8 @@ First of all, I want to thanks all the developers of the librairies used in this
 ## Overview
 
 <img width="1853" height="1011" alt="image" src="https://github.com/user-attachments/assets/dc7966a2-4d67-4b24-b6c6-1e896b830da1" />
-Assets used in this scene : [PSX style office pack](https://valsekamerplant.itch.io/psx-style-opulent-office?download)  by [valsekamerplant](https://valsekamerplant.itch.io/)
+
+Assets used in this scene : [PSX style office pack](https://valsekamerplant.itch.io/psx-style-opulent-office?download) by [valsekamerplant](https://valsekamerplant.itch.io/)
 
 ## Getting Started
 
@@ -41,7 +42,7 @@ Assets used in this scene : [PSX style office pack](https://valsekamerplant.itch
 - C++17 compatible compiler
 - [CMake](https://cmake.org/) (>=3.16)
 - [OpenGL](https://www.opengl.org/) (>=4.6)
-- Git (in order to clone the repo and the submodules)
+- Git (clone the repo and the submodules)
 
 ### Build Instructions
 
