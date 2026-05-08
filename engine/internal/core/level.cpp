@@ -1,6 +1,9 @@
 #include "level/level.h"
 #include "core/entity.h"
+#include <utility>
 #include <vector>
+
+static std::vector<Core::Entity*> entities_to_destroy;
 
 Core::Level::Level(const char* _name) : name(_name)
 {
@@ -26,18 +29,13 @@ Core::Entity* Core::Level::CreateEntity(const char* _name, Entity* _parent)
 
 void Core::Level::DestroyEntity(Core::Entity* _entity)
 {
+	entities_to_destroy.push_back(_entity);
 	_entity->OnDestroy();
 
-	for(Entity* _ent: _entity->GetChildren())
+	for(Core::Entity* _ent: _entity->GetChildren())
 	{
-		DestroyEntity(_ent);
+		Core::Level::DestroyEntity(_ent);
 	}
-
-	std::vector<Entity*>* parent_vec = &_entity->parent->children;
-	parent_vec->erase(find(parent_vec->begin(), parent_vec->end(), _entity));
-
-	entities.erase(find(entities.begin(), entities.end(), _entity));
-	delete _entity;
 }
 
 void Core::Level::OnAwake()
@@ -58,6 +56,8 @@ void Core::Level::OnStart()
 
 void Core::Level::OnUpdate(float dt)
 {
+	HandleEntityDestruction();
+
 	for (auto& e : entities)
 	{
 		e->OnUpdate(dt);
@@ -78,4 +78,29 @@ void Core::Level::OnGUIRender()
 	{
 		e->OnGUIRender();
 	}
+}
+
+void Core::Level::HandleEntityDestruction()
+{
+	std::vector<Core::Entity*> to_destroy;
+	std::swap(to_destroy, entities_to_destroy); // We don't want DestroyEntity to add element while we're destroying others
+
+	for(Core::Entity* _entity: to_destroy)
+	{
+		if(_entity->parent)
+		{
+			std::vector<Entity*>* parent_vec = &_entity->parent->children;
+			auto it = find(parent_vec->begin(), parent_vec->end(), _entity);
+            if (it != parent_vec->end())
+                parent_vec->erase(it);
+		}
+
+		auto it = find(entities.begin(), entities.end(), _entity);
+        if (it != entities.end())
+            entities.erase(it);
+
+		delete _entity;
+	}
+
+	entities_to_destroy.clear();
 }

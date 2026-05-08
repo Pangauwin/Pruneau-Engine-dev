@@ -22,18 +22,7 @@ public:
 		AddComponent<Transform>();
 	}
 
-	~Entity()
-	{
-		for (auto& _child : children)
-		{
-			delete _child;
-		}
-
-		for(auto& _component : components)
-		{
-			_component.second->OnDestroy();
-		}
-	}
+	~Entity() = default;
 
 	Entity(const Entity&) = delete;
 	Entity& operator=(const Entity&) = delete;

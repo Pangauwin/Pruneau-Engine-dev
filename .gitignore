@@ -5,6 +5,7 @@
 /.idea/
 /.github/
 /.cache/
+/ressources/
 
 *.user
 *.exe

@@ -32,5 +32,8 @@ public:
 
     std::string name;
     std::vector<Entity*> entities;
+
+private:
+    void HandleEntityDestruction();
 };
 }
