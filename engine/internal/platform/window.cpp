@@ -117,6 +117,14 @@ Platform::Window::Window(WindowParams& _params) : params(_params), m_glfw_window
 		glfwTerminate();
 	}
 
+	glEnable(GL_DEBUG_OUTPUT);
+	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+	glDebugMessageCallback([](GLenum src, GLenum type, GLuint id,
+		GLenum severity, GLsizei, const GLchar* msg, const void*) {
+		if (severity != GL_DEBUG_SEVERITY_NOTIFICATION)
+			fprintf(stderr, "[GL] %s\n", msg);
+	}, nullptr);
+
 	glViewport(0, 0, params.width, params.height);
 
 	glfwSetFramebufferSizeCallback(m_glfw_window, frame_buffer_size_callback);
