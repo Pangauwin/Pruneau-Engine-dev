@@ -1,4 +1,4 @@
-# Pruneau Renderer
+# Pruneau-Engine-dev
 
 <img width="1200" height="800" alt="pruneau2" src="https://github.com/user-attachments/assets/fa402cb6-286b-45e1-bab0-e29abebe0b37" />
 
@@ -13,6 +13,7 @@ First of all, I want to thanks all the developers of the librairies used in this
  - [ImGui](https://github.com/ocornut/imgui)
  - [ImGuizmo](https://github.com/CedricGuillemet/ImGuizmo)
  - [stb](https://github.com/nothings/stb)
+ - [Assimp](https://github.com/assimp/assimp)
 
  Credits to [enemymouse](https://github.com/enemymouse) for the gui graphics style
 
@@ -48,7 +49,7 @@ Assets used in this scene : [PSX style office pack](https://valsekamerplant.itch
 
 #### WARNING #1 : This projects only builds on Linux.
 #### WARNING #2 : This is NOT a stable version, the project is still in development, expect crashes/non working features
-#### WARNING #3 : This project only works with Visual Studio 2026 and MSVC, don't expect it to work on other compilers
+#### WARNING #3 : This project only works with clang, I don't ensure it to work with other compilers
 
 1. Clone the repository:
     ```bash
