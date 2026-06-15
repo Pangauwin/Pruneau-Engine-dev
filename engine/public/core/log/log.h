@@ -4,6 +4,8 @@
 
 namespace Core {
 
+//TODO : Add format on declarations
+
 void LogMessage(std::string _message);
 void LogMessageDebug(std::string _message);
 void LogMessageInfo(std::string _message);

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "asset/asset.h"
 #include "core/component.h"
 
 #include "renderer/model.h"
@@ -14,7 +15,7 @@ namespace Core
 class ModelRenderer : public Component, AutoRegisterComponent<ModelRenderer>
 {
 public:
-	explicit ModelRenderer(Entity* owner) : Component(owner), model(nullptr), _model_id(0) // Used by editor
+	explicit ModelRenderer(Entity* owner) : Component(owner), model(nullptr), m_model_id(0) // Used by editor
 	{
 		Renderer::Renderer::Get()->RegisterModel(this);
 	} 
@@ -22,10 +23,10 @@ public:
 	ModelRenderer(Entity* owner, AssetID _model); // Used for compiler to distinguish the one used by editor and the normal one
 	~ModelRenderer();
 
-	void OnEditorRender();
+	void SetModelID(AssetID _model_id);
 
 	std::shared_ptr<Renderer::Model> model;
-	AssetID _model_id;
+	AssetID m_model_id;
 private:
 
 };

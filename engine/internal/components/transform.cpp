@@ -139,35 +139,6 @@ const glm::vec3& Core::Transform::GetRight() const
     return m_right;
 }
 
-void Core::Transform::OnEditorRender()
-{
-    bool update_matrix = false;
-
-    if (ImGui::DragFloat3("Position", &m_position.x, 0.1f))
-    {
-        update_matrix = true;
-    }
-    if (ImGui::DragFloat3("Scale", &m_scale.x, 0.1f))
-    {
-        update_matrix = true;
-    }
-
-    glm::vec3 euler = glm::degrees(glm::eulerAngles(m_rotation));
-
-    if(ImGui::DragFloat3("Rotation", &euler.x, 0.1f))
-    {
-        glm::vec3 radians = glm::radians(euler);
-        m_rotation = glm::quat(radians);
-
-        update_matrix = true;
-    }
-
-    if (update_matrix)
-    {
-        UpdateMatrix();
-    }
-}
-
 #pragma endregion
 
 void Core::Transform::UpdateMatrix()

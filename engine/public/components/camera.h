@@ -101,9 +101,12 @@ public:
 	void OnEditorRender();
 	glm::mat4* GetPerspective();
 
+	CameraConfig config;
+
+	bool updated;
+
+
 private:
 	glm::mat4 m_projection;
-	CameraConfig m_config;
-	bool m_updated;
 };
 }

@@ -8,7 +8,6 @@
 #include <iomanip>
 #include <type_traits>
 #include <variant>
-#include <cxxabi.h>
 
 #include "core/application.h"
 #include "asset/asset.h"
@@ -17,7 +16,7 @@
 #include "components/model_renderer.h"
 #include "components/transform.h"
 
-#include "../components/editor_camera.h"
+#include "components/editor_camera.h"
 
 #include "core/entity.h"
 #include "level/level.h"
@@ -41,7 +40,8 @@
 #include "core/time.h"
 
 #include "renderer/ui/user_interface.h"
-//TODO : clean other ImGui/ImGuizmo includes
+
+#include "components/display/component_displayer.h"
 
 #pragma region DEFINES
 
@@ -75,8 +75,6 @@ static ImGuizmo::MODE imguizmo_mode(ImGuizmo::LOCAL);
 #pragma region Functions
 static void DrawEntityNode(Core::Entity* _entity);
 
-template<typename T>
-static std::string GetTypeName(T& obj);
 #pragma endregion
 
 #pragma endregion
@@ -416,45 +414,7 @@ void EngineLayer::EngineLayer::OnGUIRender()
                 if (arg)
                 {
                     Core::Entity* selected_entity = arg;
-                    ImGui::InputText("Name##entity_name" , &selected_entity->name);
-
-                    for (auto& i : selected_entity->components)
-                    {
-                        std::string comp_name = GetTypeName(*i.second.get());
-
-                        std::string result = comp_name.substr(comp_name.find_last_of(":") + 1);
-
-                        ImGui::BeginGroup();
-
-                        bool enabled = true; // TODO : Implement Component enable
-                        ImGui::Checkbox("##enabled", &enabled);
-
-                        ImGui::SameLine();
-
-                        if (ImGui::CollapsingHeader(result.c_str(), ImGuiTreeNodeFlags_DefaultOpen))
-                        {
-                            i.second.get()->OnEditorRender();
-                        }
-
-                        ImGui::EndGroup();
-                    }
-
-                    if (ImGui::Button("Add Component"))
-                        ImGui::OpenPopup("AddComponentPopup");
-
-                    if (ImGui::BeginPopup("AddComponentPopup"))
-                    {
-                        for (const auto& [type, info] : Core::ComponentRegistry::All())
-                        {
-                            if (ImGui::MenuItem(info.name.c_str()) && !(selected_entity->components[type]))
-                            {
-                                selected_entity->components[type] = info.factory(selected_entity);
-                                ImGui::CloseCurrentPopup();
-                            }
-                        }
-
-                        ImGui::EndPopup();
-                    }
+                    Editor::ComponentDisplayer::DrawEntityInterface(*selected_entity);
                 }
 
                 else
@@ -817,12 +777,4 @@ static void DrawEntityNode(Core::Entity* _entity)
 
         ImGui::TreePop();
     }
-}
-
-template <typename T>
-std::string GetTypeName(T& obj)
-{
-    int status = 0;
-    std::unique_ptr<char, void(*)(void*)> res{abi::__cxa_demangle(typeid(obj).name(), nullptr, nullptr, &status), std::free};
-    return (status == 0) ? res.get() : typeid(obj).name();
 }

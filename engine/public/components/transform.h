@@ -36,12 +36,12 @@ public:
 
 	void OnEditorRender();
 
-private:
+public:
 	void UpdateMatrix();
 	Transform* RegisterChild(Transform* _child);
 	void UnRegisterChild(Transform* _child);
 
-private:
+public:
 	bool m_updated;
 	glm::mat4 m_world_transform;
 	glm::mat4 m_local_transform;

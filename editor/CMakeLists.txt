@@ -14,4 +14,5 @@ target_link_libraries(PruneauEditor
 
 target_include_directories(PruneauEditor
     PRIVATE ${CMAKE_SOURCE_DIR}/engine/public
+    PRIVATE ${CMAKE_SOURCE_DIR}/editor
 )

@@ -1,4 +1,4 @@
-#include "log.h"
+#include "core/log/log.h"
 
 #include "core/application.h"
 #include "platform/terminal.h"

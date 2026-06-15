@@ -25,7 +25,6 @@ public:
 	virtual void OnAttach() {}
 	virtual void OnUpdate(float dt) { (void)dt; }
 	virtual void OnRender() {}
-	virtual void OnEditorRender() {} //TODO : create a defined variable that make this function build on editor version only
 	virtual void OnGUIRender() {}
 	virtual void OnDestroy() {}
 

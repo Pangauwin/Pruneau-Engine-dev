@@ -30,8 +30,6 @@ target_link_libraries(PruneauEngine
         imguizmo
 )
 
-# TODO : Remove imgui & imguizmo (move in editor)
-
 if (UNIX)
     find_package(OpenGL REQUIRED)
     find_package(X11 REQUIRED)
