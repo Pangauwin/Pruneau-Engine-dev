@@ -35,7 +35,7 @@ public:
 public:
 	WindowParams params;
 
-private:
+public:
 	GLFWwindow* m_glfw_window;
 
 };

@@ -9,7 +9,13 @@ add_executable(PruneauEditor
 )
 
 target_link_libraries(PruneauEditor
-    PRIVATE PruneauEngine imgui imguizmo
+    PRIVATE PruneauEngine
+)
+
+target_link_libraries(PruneauEditor
+    PUBLIC
+        imgui
+        imguizmo
 )
 
 target_include_directories(PruneauEditor

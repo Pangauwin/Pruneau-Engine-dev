@@ -26,8 +26,6 @@ target_link_libraries(PruneauEngine
         glm
         stb
         assimp
-        imgui
-        imguizmo
 )
 
 if (UNIX)

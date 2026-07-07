@@ -3,7 +3,6 @@
 #include "renderer/renderer.h"
 
 #include <glm/ext/matrix_clip_space.hpp>
-#include <imgui.h>
 
 namespace Core {
 

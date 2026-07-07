@@ -3,8 +3,6 @@
 #include "core/entity.h"
 #include <algorithm>
 
-#include <imgui.h>
-
 
 namespace Core {
 

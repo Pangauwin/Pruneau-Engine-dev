@@ -1,11 +1,13 @@
 #pragma once
-
+//TODO : Rename to editor layer
 #include "core/layer.h"
 #include "core/event.h"
 
 #include <vector>
 #include <string>
 #include <tuple>
+
+#include <imgui.h>
 
 namespace EngineLayer {
 
@@ -33,6 +35,7 @@ public:
 	bool is_renderer_focused = false;
 
 	static EngineLayer* Get();
+
 private:
 	std::vector<std::tuple<LOG_PRIORITY, std::string>> m_message_pool;
 };

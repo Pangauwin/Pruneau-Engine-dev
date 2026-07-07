@@ -59,7 +59,6 @@ Renderer::Shader::Shader(const char* _vertex_shader_code, const char* _fragment_
 
 		Core::LogMessageError("Failed to link shader program: " + ((std::string)info_log));
 
-		//TODO : Log Errors
 		glDeleteProgram(m_id);
 	}
 

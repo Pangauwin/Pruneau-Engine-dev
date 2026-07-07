@@ -7,7 +7,5 @@
 
 namespace ImGui {
 
-
-
 bool EditableLabel(const char* id, std::string& value);
 }

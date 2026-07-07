@@ -1,12 +1,8 @@
 #include "asset/asset.h"
 #include "asset/asset_manager.h"
 
-#include <cstdint>
-#include <cstring>
-#include <imgui.h>
 
 #include <memory>
-#include <misc/cpp/imgui_stdlib.cpp>
 
 #include "asset/asset_manager.h"
 
@@ -34,10 +30,7 @@ void Core::MeshAsset::Draw(const glm::mat4& _view, const glm::mat4& _model, cons
 {
 	m_mesh->Draw(_view, _model, _perspective);
 }
-void Core::MeshAsset::OnGUIRender()
-{
 
-}
 #pragma endregion
 
 #pragma region TextureAsset
@@ -50,16 +43,6 @@ Core::TextureAsset::TextureAsset(std::string _name, AssetID _id, void* _data, in
 void Core::TextureAsset::Bind(int _slot)
 {
 	m_texture.get()->Bind(_slot);
-}
-
-void Core::TextureAsset::OnGUIRender()
-{
-	ImGui::Text("Texture preview:");
-	Renderer::Texture* tex = GetTexture();
-	if(tex)
-		ImGui::Image((void*)(intptr_t)tex->GetID(), ImVec2(tex->GetWidth(), tex->GetHeight()));
-	else
-	 	ImGui::Text("No render available (texture may be broken)");
 }
 
 namespace Core {
@@ -75,19 +58,6 @@ namespace Core {
 Core::ShaderAsset::ShaderAsset(std::string _name, AssetID _id, const char* _vertex_shader_code, const char* _fragment_shader_code) 
 	: Asset(_name, _id), m_shader(std::make_shared<Renderer::Shader>(_vertex_shader_code, _fragment_shader_code)) {}
 
-void Core::ShaderAsset::OnGUIRender()
-{
-	ImGui::Text("Shader Asset");
-}
-
-void Core::ShaderAsset::OnContextMenuRender()
-{
-	if(ImGui::MenuItem("Create Material from Shader"))
-	{
-		AssetManager::CreateMaterial(AssetManager::GetAsset<ShaderAsset>(this->GetID()));
-	}
-}
-
 #pragma endregion
 
 #pragma region ModelAsset
@@ -97,29 +67,6 @@ void Core::ShaderAsset::OnContextMenuRender()
 Core::ModelAsset::ModelAsset(std::string _name, AssetID _id, std::vector<std::tuple<glm::mat4, std::shared_ptr<Core::MeshAsset>>> _meshes)
 	: Asset(_name, _id), m_model(std::make_shared<Renderer::Model>(std::move(_meshes))) {}
 
-void Core::ModelAsset::OnGUIRender()
-{
-	ImGui::Text("Internal meshes ids: ");
-	for (auto& _mesh : m_model->GetMeshes())
-	{
-		std::shared_ptr<MeshAsset> _asset = std::get<std::shared_ptr<MeshAsset>>(_mesh);
-		ImGui::BulletText("%s", _asset->GetName().c_str());
-
-		int id = _asset->GetMesh()->m_material->GetID();
-
-		ImGui::PushID(_asset.get());
-
-		if(ImGui::DragInt("MaterialID", &id))
-		{
-			if(std::shared_ptr<Core::MaterialAsset> _mat = AssetManager::GetAsset<MaterialAsset>(id))
-			{
-				_asset->GetMesh()->m_material = _mat;
-			}
-		}
-
-		ImGui::PopID();
-	}
-}
 
 namespace Core {
 	ModelAsset::~ModelAsset() = default;
@@ -173,150 +120,6 @@ void Core::MaterialAsset::Bind()
 		UploadUniform(uniform_name, value);
 	}
 
-}
-
-void Core::MaterialAsset::OnGUIRender()
-{
-	if (ImGui::CollapsingHeader("Textures", ImGuiTreeNodeFlags_DefaultOpen))
-    {
-        for (auto& [uniform_name, tex] : m_textures)
-        {
-            ImGui::Text("%s:", uniform_name.c_str());
-            
-			int v = 0;
-
-			if(tex)
-				v = tex->GetID();
-			
-			if(ImGui::DragInt("TextureID: ", &v))
-			{
-				tex = AssetManager::GetAsset<TextureAsset>(v);
-			}
-			if(tex)
-			{
-				Renderer::Texture* texture = tex->GetTexture();
-				if (texture)
-				{
-					ImGui::Image((void*)(intptr_t)texture->GetID(), ImVec2(64,64));
-				}
-			}
-        }
-
-		if(ImGui::Button("Add Texture"))
-			ImGui::OpenPopup("Add Texture Popup");
-
-		if(ImGui::BeginPopup("Add Texture Popup"))
-		{
-			static char name[64] = "";
-			static int texture_id = 0;
-
-			ImGui::InputText("Name", name, 64);
-			ImGui::DragInt("Texture ID", &texture_id);
-
-			if(ImGui::Button("Add"))
-			{
-				if(strlen(name) > 0)
-				{
-					std::shared_ptr<Core::TextureAsset> texture = AssetManager::GetAsset<TextureAsset>(texture_id);
-					m_textures[name] = texture;
-
-					name[0] = '\0';
-				}
-
-				ImGui::CloseCurrentPopup();
-			}
-
-			ImGui::EndPopup();
-		}
-    }
-
-	if (ImGui::CollapsingHeader("Uniforms", ImGuiTreeNodeFlags_DefaultOpen))
-	{
-		for (auto it = m_uniforms.begin(); it != m_uniforms.end(); )
-		{
-			auto& [name, value] = *it;
-
-			ImGui::PushID(name.c_str());
-
-			ImGui::Text("%s", name.c_str());
-			ImGui::SameLine();
-
-			bool remove = false;
-
-			std::visit([&](auto& arg)
-			{
-				using T = std::decay_t<decltype(arg)>;
-
-				if constexpr (std::is_same_v<T, int>)
-					ImGui::DragInt("##v", &arg);
-
-				else if constexpr (std::is_same_v<T, float>)
-					ImGui::DragFloat("##v", &arg, 0.1f);
-
-				else if constexpr (std::is_same_v<T, glm::vec2>)
-					ImGui::DragFloat2("##v", &arg.x, 0.1f);
-
-				else if constexpr (std::is_same_v<T, glm::vec3>)
-					ImGui::ColorEdit3("##v", &arg.x);
-
-				else if constexpr (std::is_same_v<T, glm::vec4>)
-					ImGui::ColorEdit4("##v", &arg.x);
-
-				else if constexpr (std::is_same_v<T, glm::mat4>)
-				{
-					ImGui::Text("mat4");
-				}
-
-			}, value);
-
-			ImGui::SameLine();
-
-			if (ImGui::Button("X"))
-				remove = true;
-
-			ImGui::PopID();
-
-			if (remove)
-				it = m_uniforms.erase(it);
-			else
-				++it;
-		}
-
-		if (ImGui::Button("Add Uniform"))
-			ImGui::OpenPopup("AddUniformPopup");
-
-		if (ImGui::BeginPopup("AddUniformPopup"))
-		{
-			static char name[64] = "";
-			static int type = 0;
-
-			const char* types[] = { "int", "float", "vec2", "vec3", "vec4" };
-
-			ImGui::InputText("Name", name, 64);
-			ImGui::Combo("Type", &type, types, IM_ARRAYSIZE(types));
-
-			if (ImGui::Button("Create"))
-			{
-				if (strlen(name) > 0 && m_uniforms.find(name) == m_uniforms.end())
-				{
-					switch (type)
-					{
-						case 0: m_uniforms[name] = 0; break;
-						case 1: m_uniforms[name] = 0.0f; break;
-						case 2: m_uniforms[name] = glm::vec2(0.0f); break;
-						case 3: m_uniforms[name] = glm::vec3(1.0f); break;
-						case 4: m_uniforms[name] = glm::vec4(1.0f); break;
-					}
-
-					name[0] = '\0';
-				}
-
-				ImGui::CloseCurrentPopup();
-			}
-
-			ImGui::EndPopup();
-		}
-	}
 }
 
 void Core::MaterialAsset::UploadUniform(const std::string& name, const UniformValue& _value)

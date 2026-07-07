@@ -1,12 +1,13 @@
 #include "component_displayer.h"
 #include "asset/asset_manager.h"
 #include "components/camera.h"
+#include "components/editor_camera.h"
 #include "components/model_renderer.h"
 #include "components/transform.h"
 #include "core/component.h"
 #include "core/entity.h"
 
-#include "core/log/log.h"
+#include "input/input.h"
 
 #include "utils/class.h"
 
@@ -140,5 +141,22 @@ void RegisterComponentDrawFunctions()
             if(ImGui::DragFloat("Near Plane", &data->near_plane))
                 _camera_component.updated = false;
         }
+    };
+
+    s_inspectors[typeid(Editor::EditorCamera)] = [](Core::Component& c) {
+        auto& _editor_camera_component = static_cast<Editor::EditorCamera&>(c);
+
+        ImGui::DragFloat("Camera speed", &_editor_camera_component.camera_speed);
+        ImGui::DragFloat("Camera Sensitivity", &_editor_camera_component.camera_sensitivity);
+        ImGui::Checkbox("Mouse state", &_editor_camera_component.mouse_locked);
+
+        ImGuiIO& io = ImGui::GetIO();
+
+        float mouse_pos[2] = {io.MousePos.x, io.MousePos.y};
+        ImGui::DragFloat2("ImGui Mouse pos", mouse_pos);
+
+
+        float engine_mouse_pos[2] = {(float)Core::Input::GetMousePosition()[0], (float)Core::Input::GetMousePosition()[1]};
+        ImGui::DragFloat2("Engine Mouse pos", engine_mouse_pos);
     };
 }

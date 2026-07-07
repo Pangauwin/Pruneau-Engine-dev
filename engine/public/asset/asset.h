@@ -42,9 +42,6 @@ public:
 	const std::string& GetName() const { return name; }
 	AssetID GetID() const { return m_id; }
 
-	virtual void OnGUIRender() {}
-	virtual void OnContextMenuRender() {}
-
 public:
 	std::string name;
 	FolderID folder = 0;
@@ -60,9 +57,6 @@ public:
 
 	std::shared_ptr<Renderer::Shader> GetShader() { return m_shader; }
 
-	void OnGUIRender();
-	void OnContextMenuRender();
-
 private:
 	std::shared_ptr<Renderer::Shader> m_shader;
 };
@@ -75,8 +69,6 @@ public:
 
 	Renderer::Texture* GetTexture() { return m_texture.get(); }
 	void Bind(int _slot);
-
-	void OnGUIRender();
 
 private:
 	std::unique_ptr<Renderer::Texture> m_texture;
@@ -97,12 +89,10 @@ public:
 
 	void Bind();
 
-	void OnGUIRender();
-
 private:
 	void UploadUniform(const std::string& name, const UniformValue& _value);
 
-private:
+public:
 	std::shared_ptr<ShaderAsset> m_shader;
 
 	std::unordered_map<std::string, std::shared_ptr<TextureAsset>> m_textures;
@@ -115,8 +105,6 @@ public:
 	MeshAsset(std::string _name, AssetID _id, const std::vector<Renderer::Vertex>& vertices, const std::vector<unsigned int>& indices, std::shared_ptr<MaterialAsset> _shader);
 
 	void Draw(const glm::mat4& _view, const glm::mat4& _model, const glm::mat4& _perspective);
-
-	void OnGUIRender();
 
 	const Renderer::Mesh* GetMesh() const { return m_mesh.get(); }
 
@@ -131,8 +119,6 @@ public:
 	~ModelAsset();
 
 	std::shared_ptr<Renderer::Model> GetModel() { return m_model; }
-
-	void OnGUIRender();
 
 private:
 	std::shared_ptr<Renderer::Model> m_model;
