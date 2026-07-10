@@ -12,14 +12,14 @@ public:
     ~EditorCamera();
 
     void OnUpdate(float dt);
-    void OnEditorRender();
 
-private:
+public:
     float camera_speed = 4.0f;
     float camera_sensitivity = 0.15f;
-    // TODO: finish
 
+private:
     float m_yaw = 0.0f;
     float m_pitch = 0.0f;
+
 };
 }

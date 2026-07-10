@@ -11,8 +11,14 @@
 #include "glm/ext/quaternion_trigonometric.hpp"
 #include "glm/fwd.hpp"
 #include "glm/trigonometric.hpp"
-#include "imgui.h"
-#include <string>
+#include <imgui.h>
+
+#include <GLFW/glfw3.h>
+
+static double mouse_pos[2];
+
+static Core::MOUSE_BUTTON_STATE previous_mouse_state = Core::MOUSE_BUTTON_STATE_RELEASED;
+static bool previous_renderer_focused = false;
 
 namespace Editor
 {
@@ -29,14 +35,28 @@ EditorCamera::~EditorCamera()
 
 void EditorCamera::OnUpdate(float dt)
 {
+    GLFWwindow* window = Core::Application::Get()->m_window->m_glfw_window;
+
     if(!EngineLayer::EngineLayer::Get()->is_renderer_focused)
+    {
+        if(previous_mouse_state == Core::MOUSE_BUTTON_STATE_PRESSED && previous_renderer_focused == true)
+        {
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        }
         return;
+    }
+    
+    if(Core::Input::GetMouseButtonState(1) == Core::MOUSE_BUTTON_STATE_PRESSED && previous_mouse_state == Core::MOUSE_BUTTON_STATE_RELEASED)
+    {
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        glfwGetCursorPos(window, mouse_pos, &mouse_pos[1]);
+    }
 
     if(Core::Input::GetMouseButtonState(1) == Core::MOUSE_BUTTON_STATE_PRESSED &&
      (Core::Input::GetMouseDelta()[0] != 0 || Core::Input::GetMouseDelta()[1] != 0))
     {
-        double delta_x = Core::Input::GetMouseDelta()[0];
-        double delta_y = Core::Input::GetMouseDelta()[1];
+        const double delta_x = Core::Input::GetMouseDelta()[0];
+        const double delta_y = Core::Input::GetMouseDelta()[1];
 
         m_yaw -= delta_x * camera_sensitivity;
         m_pitch -= delta_y * camera_sensitivity;
@@ -90,20 +110,38 @@ void EditorCamera::OnUpdate(float dt)
         movement_direction -= GetOwner()->GetComponent<Core::Transform>()->GetUp();
     }
 
-    if(!has_moved)
-        return;
-    
-    if(glm::length(movement_direction) > 0)
-        movement_direction = glm::normalize(movement_direction);
-    movement_direction *= camera_speed * dt;
+    if(has_moved)
+    {    
+        if(glm::length(movement_direction) > 0)
+            movement_direction = glm::normalize(movement_direction);
+        movement_direction *= camera_speed * dt;
 
-    GetOwner()->GetComponent<Core::Transform>()->Translate(movement_direction);
+        GetOwner()->GetComponent<Core::Transform>()->Translate(movement_direction);
+    }
+
+    previous_mouse_state = Core::Input::GetMouseButtonState(1);
+    previous_renderer_focused = EngineLayer::EngineLayer::Get()->is_renderer_focused;
+
+    //glfwSetCursorPos(window, mouse_pos[0], mouse_pos[1]);
+
+    double xpos2, ypos2;
+    //glfwGetCursorPos(window, &xpos2, &ypos2);
+
+    /*Core::LogMessageInfo("Mouse pos: " + std::to_string(xpos2) 
+        + "," + std::to_string(ypos2));
+
+    Core::LogMessageInfo("Mouse desired pos: " + std::to_string(mouse_pos[0]) 
+        + "," + std::to_string(mouse_pos[1]));
+
+    Core::LogMessageInfo("Mouse delta: " + std::to_string(Core::Input::GetMouseDelta()[0]) 
+        + "," + std::to_string(Core::Input::GetMouseDelta()[1]));*/
+
+    Core::Input::previous_mouse_position[0] = mouse_pos[0];
+    Core::Input::previous_mouse_position[1] = mouse_pos[1];
+
+    ImGui::SetCursorPosX(mouse_pos[0]);
+    ImGui::SetCursorPosY(mouse_pos[1]);
+
+    //TODO : Clear the previous mouse pos (idk how) to make the camera can rotate and its rotation movement ends !
 }
-
-void EditorCamera::OnEditorRender()
-{
-    ImGui::DragFloat("Camera speed", &camera_speed);
-    ImGui::DragFloat("Camera Sensitivity", &camera_sensitivity);
-}
-
 }
