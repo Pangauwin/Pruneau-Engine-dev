@@ -36,7 +36,7 @@ public:
     static const double* GetMouseDelta();
     static const double* GetMousePosition();
 
-    static void UpdateMousePosition(double* mouse_position);
+    static void UpdateMousePosition();
     static void UpdateMouseDelta();
     
     static void ChangeDisabledMouse(bool _disabled);
@@ -51,9 +51,11 @@ private:
     static MOUSE_BUTTON_STATE mouse_map[8];
     static double mouse_delta[2];
     static double mouse_position[2];
-    static double previous_mouse_position[2];
     static bool disabled_mouse;
 
+public:
+    static double previous_mouse_position[2];
+    //TODO : do a proper API
 };
 
 }

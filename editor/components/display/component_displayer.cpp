@@ -148,7 +148,6 @@ void RegisterComponentDrawFunctions()
 
         ImGui::DragFloat("Camera speed", &_editor_camera_component.camera_speed);
         ImGui::DragFloat("Camera Sensitivity", &_editor_camera_component.camera_sensitivity);
-        ImGui::Checkbox("Mouse state", &_editor_camera_component.mouse_locked);
 
         ImGuiIO& io = ImGui::GetIO();
 

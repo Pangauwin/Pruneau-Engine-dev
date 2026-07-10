@@ -1,5 +1,9 @@
 #include "input/input.h"
 
+#include <glad/glad.h>
+
+#include "GLFW/glfw3.h"
+#include "core/application.h"
 namespace Core {
 
 MOUSE_BUTTON_STATE Input::mouse_map[8] = {MOUSE_BUTTON_STATE_RELEASED,  
@@ -404,10 +408,9 @@ const double* Input::GetMousePosition()
     return mouse_position;
 }
 
-void Input::UpdateMousePosition(double* _mouse_position)
+void Input::UpdateMousePosition()
 {
-    mouse_position[0] = _mouse_position[0];
-    mouse_position[1] = _mouse_position[1];
+    glfwGetCursorPos(Core::Application::Get()->m_window.get()->m_glfw_window, &mouse_position[0], &mouse_position[1]);
 }
 
 void Input::UpdateMouseDelta()
@@ -419,11 +422,11 @@ void Input::UpdateMouseDelta()
     previous_mouse_position[1] = mouse_position[1];
 }
 
+//TODO: Rework the enable/disable mouse in order for the user not to use glfw himself
+
 void Input::ChangeDisabledMouse(bool _disabled_mouse)
 {
     disabled_mouse = _disabled_mouse;
-
-    
 }
 
 bool Input::GetDisabledMouse()

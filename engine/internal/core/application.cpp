@@ -53,6 +53,7 @@ void Core::Application::Run()
 	while (!m_app_should_close)
 	{
 		Time::Update();
+		Input::UpdateMousePosition();
 		Input::UpdateMouseDelta();
 
 		PollEvents();

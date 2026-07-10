@@ -76,9 +76,7 @@ static void cursor_position_callback(GLFWwindow* window, double xpos, double ypo
 	Core::CursorPosition event(xpos, ypos);
 	Core::Application::Get()->OnEvent(event);
 
-	double mouse_position[2] = {xpos, ypos};
-
-	Core::Input::UpdateMousePosition(mouse_position);
+	Core::Input::UpdateMousePosition();
 }
 
 #pragma endregion
