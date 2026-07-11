@@ -748,7 +748,10 @@ void EngineLayer::EngineLayer::OnGUIRender()
     ImGui::End();
 
 #pragma endregion
+}
 
+void EngineLayer::EngineLayer::PostGUIRender()
+{
     ImGui::EndFrame();
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

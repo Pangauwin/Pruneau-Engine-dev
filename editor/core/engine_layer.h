@@ -27,6 +27,7 @@ public:
 
 	void OnAttach() override;
 	void OnGUIRender() override;
+	void PostGUIRender() override;
 	void OnEvent(Core::Event& _event) override;
 
 	void LogMessage(std::string _message, LOG_PRIORITY _priority);

@@ -82,6 +82,9 @@ void Core::Application::Run()
 
 		LevelManager::OnGUIRender();
 
+		for(Layer* _layer : m_layer_stack)
+			_layer->PostGUIRender();
+
 		m_renderer->PostGUIRender();
 	}
 

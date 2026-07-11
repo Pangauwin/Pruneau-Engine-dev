@@ -19,6 +19,7 @@ public:
 	virtual void OnUpdate(float dt) {}
 	virtual void OnRender() {}
 	virtual void OnGUIRender() {}
+	virtual void PostGUIRender() {}
 
 	const char* GetName() const { return m_name; }
 
