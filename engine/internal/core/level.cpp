@@ -2,6 +2,7 @@
 #include "core/entity.h"
 #include <utility>
 #include <vector>
+#include <unordered_set>
 
 static std::vector<Core::Entity*> entities_to_destroy;
 
@@ -29,13 +30,13 @@ Core::Entity* Core::Level::CreateEntity(const char* _name, Entity* _parent)
 
 void Core::Level::DestroyEntity(Core::Entity* _entity)
 {
-	entities_to_destroy.push_back(_entity);
-	_entity->OnDestroy();
-
 	for(Core::Entity* _ent: _entity->GetChildren())
 	{
 		Core::Level::DestroyEntity(_ent);
 	}
+
+	_entity->OnDestroy();
+	entities_to_destroy.push_back(_entity);
 }
 
 void Core::Level::OnAwake()
@@ -85,9 +86,11 @@ void Core::Level::HandleEntityDestruction()
 	std::vector<Core::Entity*> to_destroy;
 	std::swap(to_destroy, entities_to_destroy); // We don't want DestroyEntity to add element while we're destroying others
 
+	std::unordered_set<Core::Entity*> destroy_set(to_destroy.begin(), to_destroy.end());
+
 	for(Core::Entity* _entity: to_destroy)
 	{
-		if(_entity->parent)
+		if(_entity->parent && !destroy_set.count(_entity->parent))
 		{
 			std::vector<Entity*>* parent_vec = &_entity->parent->children;
 			auto it = find(parent_vec->begin(), parent_vec->end(), _entity);

@@ -93,7 +93,7 @@ void Renderer::Shader::SetVec3(const std::string& _name, const glm::vec3& _val) 
 
 void Renderer::Shader::SetVec4(const std::string& _name, const glm::vec4& _val) const
 {
-	glUniform4f(glGetUniformLocation(m_id, _name.c_str()), _val.x, _val.y, _val.z, _val.t);
+	glUniform4f(glGetUniformLocation(m_id, _name.c_str()), _val.x, _val.y, _val.z, _val.w);
 }
 
 void Renderer::Shader::SetMat4(const std::string& _name,const glm::mat4& _val) const

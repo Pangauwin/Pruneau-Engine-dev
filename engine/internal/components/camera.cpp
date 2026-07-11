@@ -18,7 +18,7 @@ Core::Camera::Camera(Entity* owner) : Component(owner), config(CAMERA_TYPE_PERSP
 {
     CameraPerspectiveData* data = static_cast<CameraPerspectiveData*>(config.data);
 
-    m_projection = glm::perspective(data->fov, data->aspect, data->near_plane, data->far_plane);
+    m_projection = glm::perspective(glm::radians(data->fov), data->aspect, data->near_plane, data->far_plane);
 
     // Defensive: only register if renderer exists
     if (Renderer::Renderer::Get())
@@ -38,7 +38,7 @@ Core::Camera::Camera(Entity* _owner, CameraConfig& _camera_config) : Component(_
     {
         CameraPerspectiveData* data = static_cast<CameraPerspectiveData*>(config.data);
 
-        m_projection = glm::perspective(data->fov, data->aspect, data->near_plane, data->far_plane);
+        m_projection = glm::perspective(glm::radians(data->fov), data->aspect, data->near_plane, data->far_plane);
     }
 
     if (Renderer::Renderer::Get())

@@ -100,7 +100,10 @@ Core::AssetID Core::AssetManager::ImportAsset(const std::string& path, FolderID 
 	}
 
 	if (!id)
+	{
 		Core::LogMessageError("Could not import asset:" + path);
+		return 0;
+	}
 	
 	Core::LogMessageInfo("Asset Imported: " + path);	
 	AssignAssetToFolder(id, _folder);
@@ -178,7 +181,7 @@ void Core::AssetManager::SetErrorShader(const char* _path)
 	}
 	else
 	{
-		AssetID error_material_ID = default_material->GetID();
+		AssetID error_material_ID = error_material->GetID();
 		error_material = std::make_shared<MaterialAsset>("Error Material", error_material_ID, error_shader);
 	}
 }
