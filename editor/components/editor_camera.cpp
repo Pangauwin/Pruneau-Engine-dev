@@ -136,11 +136,8 @@ void EditorCamera::OnUpdate(float dt)
     Core::LogMessageInfo("Mouse delta: " + std::to_string(Core::Input::GetMouseDelta()[0]) 
         + "," + std::to_string(Core::Input::GetMouseDelta()[1]));*/
 
-    Core::Input::previous_mouse_position[0] = mouse_pos[0];
-    Core::Input::previous_mouse_position[1] = mouse_pos[1];
-
-    ImGui::SetCursorPosX(mouse_pos[0]);
-    ImGui::SetCursorPosY(mouse_pos[1]);
+    //Core::Input::previous_mouse_position[0] = mouse_pos[0];
+    //Core::Input::previous_mouse_position[1] = mouse_pos[1];
 
     //TODO : Clear the previous mouse pos (idk how) to make the camera can rotate and its rotation movement ends !
 }
