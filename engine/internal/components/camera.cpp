@@ -1,5 +1,6 @@
 #include "components/camera.h"
 
+#include "core/application.h"
 #include "renderer/renderer.h"
 
 #include <glm/ext/matrix_clip_space.hpp>
@@ -23,6 +24,8 @@ Core::Camera::Camera(Entity* owner) : Component(owner), config(CAMERA_TYPE_PERSP
     // Defensive: only register if renderer exists
     if (Renderer::Renderer::Get())
         Renderer::Renderer::Get()->RegisterCamera(this);
+    else
+        Core::LogMessageError("Renderer not detected ! Camera registration impossible !");
 }
 
 Core::Camera::Camera(Entity* _owner, CameraConfig& _camera_config) : Component(_owner), config(_camera_config), m_projection(glm::mat4(1.0f)), updated(true)
@@ -43,12 +46,16 @@ Core::Camera::Camera(Entity* _owner, CameraConfig& _camera_config) : Component(_
 
     if (Renderer::Renderer::Get())
         Renderer::Renderer::Get()->RegisterCamera(this);
+    else
+        Core::LogMessageError("Renderer not detected ! Camera registration impossible !");
 }
 
 Core::Camera::~Camera()
 {
     if (Renderer::Renderer::Get())
         Renderer::Renderer::Get()->UnRegisterCamera(this);
+    else
+        Core::LogMessageError("Renderer not detected, Camera registration impossible !");
 }
 
 void Core::Camera::SetCameraConfig(CameraConfig& _camera_config)

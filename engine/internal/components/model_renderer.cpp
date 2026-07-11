@@ -22,11 +22,21 @@ ModelRenderer::ModelRenderer(Entity* _owner, AssetID _model) : Component(_owner)
     {
         model = model_asset->GetModel();
     }
+    if(!Renderer::Renderer::Get())
+    {
+        Core::LogMessageError("No Renderer Detected, Model registration impossible !");
+        return;
+    }
     Renderer::Renderer::Get()->RegisterModel(this);
 }
 
 ModelRenderer::~ModelRenderer()
 {
+    if(!Renderer::Renderer::Get())
+    {
+        Core::LogMessageError("Renderer not detected ! ModelRenderer unregistration impossible !");
+        return;
+    }
     Renderer::Renderer::Get()->UnRegisterModel(this);
 }
 
