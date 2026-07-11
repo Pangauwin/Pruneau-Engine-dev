@@ -48,3 +48,7 @@ set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
 set(ASSIMP_INSTALL OFF CACHE BOOL "" FORCE)
 
 add_subdirectory(assimp)
+
+# EnTT
+add_library(entt INTERFACE)
+target_include_directories(entt INTERFACE entt/src)

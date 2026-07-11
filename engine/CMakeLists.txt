@@ -26,6 +26,7 @@ target_link_libraries(PruneauEngine
         glm
         stb
         assimp
+        entt
 )
 
 if (UNIX)
