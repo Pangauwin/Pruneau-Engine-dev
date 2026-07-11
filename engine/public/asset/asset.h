@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <string>
 #include <memory>
 #include <vector>
@@ -32,15 +33,21 @@ namespace Core {
 using AssetID = uint32_t;
 using FolderID = uint32_t;
 
+using AssetGUID = std::array<uint64_t, 2>; // Equivalent to 128 bits key
+
+AssetGUID GenerateGUID(); // For now it sits there, but will be useful later (planned)
+
 class Asset
 {
 public:
-	Asset(std::string _name, AssetID _id) : name(std::move(_name)), m_id(_id) {}
+	Asset(std::string _name, AssetID _id) : name(std::move(_name)), m_id(_id), guid(GenerateGUID()) {}
 
 	virtual ~Asset() = default;
 
 	const std::string& GetName() const { return name; }
 	AssetID GetID() const { return m_id; }
+
+	AssetGUID guid;
 
 public:
 	std::string name;

@@ -1,10 +1,18 @@
 #include "asset/asset.h"
 #include "asset/asset_manager.h"
 
-
+#include <cstdint>
+#include <random>
 #include <memory>
 
 #include "asset/asset_manager.h"
+
+Core::AssetGUID Core::GenerateGUID()
+{
+	static thread_local std::mt19937_64 rng(std::random_device{}());
+	static std::uniform_int_distribution<uint64_t> dist;
+	return { dist(rng), dist(rng)};
+}
 
 #include "core/application.h"
 
