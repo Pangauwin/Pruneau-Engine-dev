@@ -6,6 +6,7 @@
 /.github/
 /.cache/
 /ressources/
+/editor/
 
 *.user
 *.exe
