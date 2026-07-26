@@ -3,6 +3,7 @@
 #include <string>
 
 #include "core/log/log.h"
+#include "entt/entity/fwd.hpp"
 #include "entt/signal/fwd.hpp"
 
 #include <entt/entt.hpp>
@@ -82,6 +83,12 @@ public:
     entt::registry& GetRegistry()
     {
         return m_registry;
+    }
+
+    template <typename T>
+    T& GetComponent(Entity _entity)
+    {
+        return m_registry.get<T>(static_cast<entt::entity>(_entity));
     }
     
 private:

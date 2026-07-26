@@ -8,4 +8,5 @@ public:
     SandboxLayer();
 
     void OnAttach() override;
+    void OnUpdate(float dt) override;
 };

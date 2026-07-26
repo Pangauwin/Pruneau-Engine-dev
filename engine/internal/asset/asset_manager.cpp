@@ -417,13 +417,20 @@ Core::AssetID Core::AssetManager::ImportShader(const std::string& path)
 	return s_next_asset_id;
 }
 
-Core::AssetID Core::AssetManager::CreateMaterial(std::shared_ptr<ShaderAsset> _shader)
+Core::AssetID Core::AssetManager::CreateMaterial(Core::AssetID _shader)
 {
-	s_next_asset_id++;
-	Core::AssetManager::m_assets[s_next_asset_id] = std::make_shared<MaterialAsset>("Material_" + std::to_string(s_next_asset_id), s_next_asset_id, _shader);
-	AssignAssetToFolder(s_next_asset_id, 0);
+	if(std::shared_ptr<ShaderAsset> _shader_ptr = AssetManager::GetAsset<ShaderAsset>(_shader))
+	{
+		s_next_asset_id++;
+		Core::AssetManager::m_assets[s_next_asset_id] = std::make_shared<MaterialAsset>("Material_" + std::to_string(s_next_asset_id), s_next_asset_id, _shader_ptr);
+		AssignAssetToFolder(s_next_asset_id, 0);
 
-	return s_next_asset_id;
+		return s_next_asset_id;
+	}
+
+	Core::LogMessageError("Error: Shader asset not valid!");
+
+	return 0;
 }
 
 static bool EndsWith(const std::string& value, const std::string& ending)

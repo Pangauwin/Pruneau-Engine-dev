@@ -86,9 +86,12 @@ namespace Core {
 
 Core::MaterialAsset::MaterialAsset(std::string _name, AssetID _id, std::shared_ptr<ShaderAsset> _shader) : Asset(_name, _id), m_shader(std::move(_shader)) {}
 
-void Core::MaterialAsset::SetTexture(const std::string& uniform_name, std::shared_ptr<TextureAsset> _texture)
+void Core::MaterialAsset::SetTexture(const std::string& uniform_name, AssetID _texture)
 {
-	m_textures[uniform_name] = std::move(_texture);
+	if(std::shared_ptr<TextureAsset> texture_asset = AssetManager::GetAsset<TextureAsset>(_texture))
+		m_textures[uniform_name] = std::move(texture_asset);
+	else
+		Core::LogMessageError("Error while passing texture parameter: texture asset not valid");
 }
 
 void Core::MaterialAsset::SetUniform(const std::string& uniform_name, const UniformValue& _value)

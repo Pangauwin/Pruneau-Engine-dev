@@ -89,7 +89,7 @@ public:
 public:
 	MaterialAsset(std::string _name, AssetID _id, std::shared_ptr<ShaderAsset> _shader);
 
-	void SetTexture(const std::string& uniform_name, std::shared_ptr<TextureAsset> _texture);
+	void SetTexture(const std::string& uniform_name, AssetID _texture);
 	void SetUniform(const std::string& uniform_name, const UniformValue& _value);
 
 	std::shared_ptr<ShaderAsset> GetShaderAsset() const { return m_shader; }

@@ -43,6 +43,9 @@ void Core::Application::Init()
 
 	LevelManager::Init();
 
+	(new TransformSystem())->Connect();
+	(new CameraSystem())->Connect();
+
 	for(Layer* l: m_layer_stack)
 	{
 		l->OnAttach();
@@ -52,10 +55,6 @@ void Core::Application::Init()
 void Core::Application::Run()
 {
 	Init();
-
-	//TODO: move these
-	(new TransformSystem())->Connect();
-	(new CameraSystem())->Connect();
 
 	while (!m_app_should_close)
 	{

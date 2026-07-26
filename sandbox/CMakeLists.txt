@@ -20,4 +20,5 @@ target_include_directories(Sandbox
 target_link_libraries(PruneauEngine
     PUBLIC
         entt
+        glm
 )

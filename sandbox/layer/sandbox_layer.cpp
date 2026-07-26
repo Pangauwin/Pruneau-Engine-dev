@@ -2,6 +2,7 @@
 
 #include <entt/entt.hpp>
 #include <memory>
+#include <string>
 
 #include "asset/asset.h"
 #include "asset/asset_manager.h"
@@ -11,26 +12,34 @@
 #include "components/transform.h"
 #include "core/layer.h"
 
-#include "entt/entity/fwd.hpp"
+#include "core/time.h"
 #include "level/level.h"
 #include "level/level_manager.h"
 
 #include "renderer/mesh.h"
 #include "renderer/model.h"
 
+#include "components/scene_camera.h"
+
+static Core::Entity cube = 0;
+static Core::Entity cam = 0;
 
 SandboxLayer::SandboxLayer() : Core::Layer("SandboxLayer") {
 
 }
 
 void SandboxLayer::OnAttach() {
+    // Component declaration
+    (new Sandbox::SceneCameraSystem())->Connect();
+
     // Asset import
     Core::AssetID shader_id = Core::AssetManager::ImportAsset("ressources/shaders/tex.vert");
     Core::AssetID cube_id = Core::AssetManager::ImportAsset("ressources/models/cube.fbx");
     Core::AssetID texture_id = Core::AssetManager::ImportAsset("ressources/textures/texture.png");
 
-    Core::AssetID material_id = Core::AssetManager::CreateMaterial(Core::AssetManager::GetAsset<Core::ShaderAsset>(shader_id));
-    Core::AssetManager::GetAsset<Core::MaterialAsset>(material_id)->m_textures["texture_diffuse_1"] = Core::AssetManager::GetAsset<Core::TextureAsset>(texture_id);
+    Core::AssetID material_id = Core::AssetManager::CreateMaterial(shader_id);
+    Core::AssetManager::GetAsset<Core::MaterialAsset>(material_id)
+        ->SetTexture("texture_diffuse_1", texture_id);
 
     std::get<std::shared_ptr<Core::MeshAsset>>(Core::AssetManager::GetAsset<Core::ModelAsset>(cube_id)->GetModel().get()->GetMeshes()[0])->GetMesh()->m_material =
         Core::AssetManager::GetAsset<Core::MaterialAsset>(material_id);
@@ -38,20 +47,29 @@ void SandboxLayer::OnAttach() {
     //Level Creation
     Core::Level* lvl = new Core::Level("My level");
 
-    Core::Entity cam = lvl->CreateEntity("Camera");
+    cam = lvl->CreateEntity("Camera");
     lvl->AddComponent<Core::Camera>(cam);
-    lvl->AddComponent<Core::Transform>(cam);
+    lvl->AddComponent<Sandbox::SceneCamera>(cam);
 
-    lvl->GetRegistry().get<Core::Camera>(static_cast<entt::entity>(cam)).index = 1;
+    lvl->GetComponent<Core::Camera>(cam).index = 1;
     lvl->camera_index = 1;
 
-    Core::Entity cube = lvl->CreateEntity("Cube");
+    cube = lvl->CreateEntity("Cube");
     lvl->AddComponent<Core::ModelRenderer>(cube);
-    lvl->AddComponent<Core::Transform>(cube);
+
+    lvl->GetComponent<Core::ModelRenderer>(cube).model_id = cube_id;
     
-    lvl->GetRegistry().get<Core::ModelRenderer>(static_cast<entt::entity>(cube)).model_id = cube_id;
-    lvl->GetRegistry().get<Core::Transform>(static_cast<entt::entity>(cam)).position = {2.0f, 5.0f, 10.0f};
-    lvl->GetRegistry().get<Core::Transform>(static_cast<entt::entity>(cam)).dirty = true;
+    lvl->GetComponent<Core::Transform>(cam).position = {2.0f, 5.0f, 10.0f};
 
     Core::LevelManager::SwitchLevel(lvl);
+}
+
+void SandboxLayer::OnUpdate(float dt)
+{
+    Core::Level* lvl = Core::LevelManager::GetCurrentLevel();
+
+    Core::Transform& transform = lvl->GetComponent<Core::Transform>(cube);
+    
+    transform.position.x = sin(Time::last_frame_time) * 3.0f;
+    transform.dirty = true;
 }

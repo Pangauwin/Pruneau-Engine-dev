@@ -1,4 +1,5 @@
 #include "level/level.h"
+#include "components/transform.h"
 #include "core/log/log.h"
 #include "entt/entity/entity.hpp"
 #include "entt/entity/fwd.hpp"
@@ -26,6 +27,7 @@ Core::Entity Core::Level::CreateEntity(const char* _name, Entity _parent)
 {
 	auto ent =  m_registry.create();
 	m_registry.emplace<Entity_info>(ent, (std::string)_name);
+	m_registry.emplace<Transform>(ent);
 
 	entt::entity parent = static_cast<entt::entity>(_parent);
 

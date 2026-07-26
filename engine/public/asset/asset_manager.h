@@ -64,7 +64,7 @@ public:
 #pragma endregion
 
 #pragma region MaterialCreation
-	static AssetID CreateMaterial(std::shared_ptr<ShaderAsset> _shader);
+	static AssetID CreateMaterial(AssetID _shader);
 #pragma endregion
 
 
@@ -98,7 +98,7 @@ private:
 }
 
 template<typename T>
-std::shared_ptr<T> Core::AssetManager::GetAsset(AssetID id)
+std::shared_ptr<T> Core::AssetManager::GetAsset(Core::AssetID id)
 {
 	auto it = m_assets.find(id);
 
