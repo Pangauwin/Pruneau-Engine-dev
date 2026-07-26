@@ -52,3 +52,7 @@ add_subdirectory(assimp)
 # EnTT
 add_library(entt INTERFACE)
 target_include_directories(entt INTERFACE entt/src)
+
+# Cereal
+add_library(cereal INTERFACE)
+target_include_directories(cereal INTERFACE cereal/include)

@@ -27,6 +27,7 @@ target_link_libraries(PruneauEngine
         stb
         assimp
         entt
+        cereal
 )
 
 if (UNIX)

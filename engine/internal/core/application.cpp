@@ -15,6 +15,9 @@
 
 #include "input/input.h"
 
+#include "components/transform.h"
+#include "components/camera.h"
+
 static float dt = 0.00001f; // Avoid 0 divisions errors
 
 static Core::Application* current_application;
@@ -26,8 +29,6 @@ Core::Application::Application(AppParams _params) :
 	m_app_should_close(false)
 {
 	current_application = this;
-
-	new LevelManager();
 }
 
 Core::Application::~Application()
@@ -40,6 +41,8 @@ void Core::Application::Init()
 	AssetManager::Init();
 	Time::Init();
 
+	LevelManager::Init();
+
 	for(Layer* l: m_layer_stack)
 	{
 		l->OnAttach();
@@ -49,6 +52,10 @@ void Core::Application::Init()
 void Core::Application::Run()
 {
 	Init();
+
+	//TODO: move these
+	(new TransformSystem())->Connect();
+	(new CameraSystem())->Connect();
 
 	while (!m_app_should_close)
 	{
@@ -65,6 +72,8 @@ void Core::Application::Run()
 			_layer->OnUpdate(dt);
 
 		LevelManager::OnUpdate(dt);
+
+		LevelManager::OnLateUpdate(dt);
 
 		m_renderer->PreRender();
 

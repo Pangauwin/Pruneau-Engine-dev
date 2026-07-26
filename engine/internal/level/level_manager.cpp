@@ -8,15 +8,17 @@ Core::LevelManager::LevelManager(Level* _default_level) : m_current_level(_defau
 		return;
 
 	instance = this;
-
-	if (!m_current_level)
-		m_current_level = new Level("Default Level");
 }
 
 Core::LevelManager::~LevelManager()
 {
 	if (m_current_level)
 		delete m_current_level; // TODO : Same here, create/call an OnDestroy method
+}
+
+void Core::LevelManager::Init()
+{
+	new LevelManager();
 }
 
 void Core::LevelManager::SwitchLevel(Level* _level)
@@ -33,7 +35,15 @@ void Core::LevelManager::SwitchLevel(Level* _level)
 
 void Core::LevelManager::OnUpdate(float dt)
 {
+	if (!instance->m_current_level)
+		instance->m_current_level = new Level("Default Level");
+
 	instance->m_current_level->OnUpdate(dt);
+}
+
+void Core::LevelManager::OnLateUpdate(float dt)
+{
+	instance->m_current_level->OnLateUpdate(dt);
 }
 
 void Core::LevelManager::OnRender()

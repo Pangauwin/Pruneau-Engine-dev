@@ -4,7 +4,7 @@
 
 #include "core/application.h"
 
-Renderer::Framebuffer::Framebuffer(uint32_t _width, uint32_t _height) : width(_width), height(_height)
+Renderer::Framebuffer::Framebuffer(uint32_t _width, uint32_t _height) : width(_width), height(_height), m_renderer_id(0)
 {
 	Invalidate();
 }

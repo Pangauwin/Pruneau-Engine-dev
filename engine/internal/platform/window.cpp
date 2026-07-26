@@ -1,5 +1,7 @@
 #include "platform/window.h"
 
+#include "components/camera.h"
+#include "level/level.h"
 #include "platform/platform.h"
 
 #include <glad/glad.h>
@@ -21,6 +23,9 @@
 #include "core/events/char.h"
 #include "core/events/cursor_position.h"
 
+#include "level/level_manager.h"
+#include <entt/entt.hpp>
+
 #pragma region glfw_callbacks
 
 static void frame_buffer_size_callback(GLFWwindow* window, int width, int height) {
@@ -28,6 +33,25 @@ static void frame_buffer_size_callback(GLFWwindow* window, int width, int height
 
 	Core::Application::Get()->m_window->params.height = height;
 	Core::Application::Get()->m_window->params.width = width;
+
+	if(Core::Level* level = Core::LevelManager::GetCurrentLevel())
+	{
+		for(auto& cam: level->GetRegistry().view<Core::Camera>())
+		{
+			auto& cam_comp = level->GetRegistry().get<Core::Camera>(cam);
+			if(cam_comp.config.type == Core::CAMERA_TYPE_PERSPECTIVE)
+			{
+				static_cast<Core::CameraPerspectiveData*>(cam_comp.config.data)->aspect = (float)width / (float)height;
+			}
+			else {
+				static_cast<Core::CameraOrthographicData*>(cam_comp.config.data)->left = -(float)width / 2;
+				static_cast<Core::CameraOrthographicData*>(cam_comp.config.data)->right = (float)width / 2;
+				static_cast<Core::CameraOrthographicData*>(cam_comp.config.data)->top = -(float)height / 2;
+				static_cast<Core::CameraOrthographicData*>(cam_comp.config.data)->bottom = (float)height / 2;
+			}
+			cam_comp.dirty = true;
+		}
+	}
 }
 
 static void window_close_callback(GLFWwindow* window) {

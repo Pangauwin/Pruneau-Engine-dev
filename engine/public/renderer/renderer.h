@@ -5,10 +5,6 @@
 
 #include "shader.h"
 
-#include "components/camera.h"
-
-#include <vector>
-
 namespace Core {
 	class Application;
 }
@@ -39,13 +35,6 @@ public:
 	static Renderer* Get();
 
 private:
-	void RegisterModel(Core::ModelRenderer* _model);
-	void UnRegisterModel(Core::ModelRenderer* _model);
-
-	void RegisterCamera(Core::Camera* _camera);
-	void UnRegisterCamera(Core::Camera* _camera);
-
-private:
 	void PreRender();
 	void PostRender();
 	
@@ -53,16 +42,10 @@ private:
 	void PostGUIRender();
 
 public:
-	std::vector<Core::Camera*> m_cameras;
-	unsigned int m_camera_index;
 	Framebuffer m_frame_buffer;
-
-
 
 private:
 	Platform::Window* m_window;
-	std::vector<Core::ModelRenderer*> m_render_pool;
-
 };
 
 extern Shader* default_shader;

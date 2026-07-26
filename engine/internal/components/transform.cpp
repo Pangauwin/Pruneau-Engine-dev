@@ -1,181 +1,83 @@
 #include "components/transform.h"
 
-#include "core/entity.h"
-#include <algorithm>
+#include "entt/entity/fwd.hpp"
+#include "level/level.h"
+#include "level/level_manager.h"
 
+#include "core/log/log.h"
 
-namespace Core {
+void Core::TransformSystem::OnUpdate()
+{
+    entt::registry& _registry = LevelManager::GetCurrentLevel()->GetRegistry();
+    auto view = _registry.view<Transform>();
 
-    static bool registered = []()
+    for(auto& entity: view)
+    {
+        Transform& data = _registry.get<Transform>(entity);
+
+        if(!data.dirty) continue;
+
+        UpdateMatrix(data);
+    }
+}
+
+void Core::TransformSystem::UpdateMatrix(Core::Transform& _transform)
+{
+    entt::registry& _registry = Core::LevelManager::GetCurrentLevel()->GetRegistry();
+
+    if(_transform.parent)
+    {
+        if(!_registry.valid(static_cast<entt::entity>(_transform.parent)))
         {
-            AutoRegisterComponent<Transform>::Register("Transform");
-            return true;
-        }();
+            Core::LogMessageError("Parent Entity not valid! Can't update transform !");
+            return;
+        }
 
-}
+        if(_registry.all_of<Core::Transform>(static_cast<entt::entity>(_transform.parent)))
+        {
+            Core::Transform& _parent_transform = _registry.get<Core::Transform>(static_cast<entt::entity>(_transform.parent));
 
-Core::Transform::Transform(Entity* _owner, glm::vec3 _position, glm::quat _rotation, glm::vec3 _scale) : 
-    Component(_owner), m_world_transform(glm::mat4(1.0f)), m_parent(nullptr), m_updated(true), 
-    m_forward(glm::vec3()), m_position(_position), m_right(glm::vec3()), m_rotation(_rotation), m_scale(_scale), m_up(glm::vec3())
-{
-    m_local_transform = glm::translate(m_world_transform, _position) * glm::mat4_cast(_rotation) * glm::scale(glm::mat4(1.0f), _scale);
-
-    if (_owner->parent)
-    {
-        m_parent = _owner->parent->GetComponent<Transform>();
-        m_parent->RegisterChild(this);
-        m_parent->UpdateMatrix();
-        m_world_transform = m_parent->GetWorldTransformMatrix() * m_local_transform;
+            if(_parent_transform.dirty)
+            {
+                UpdateMatrix(_parent_transform);
+            }
+        }
     }
 
-    else
+    _transform.local_transform = glm::mat4(1.0f);
+    _transform.local_transform = glm::translate(_transform.local_transform, _transform.position);
+    _transform.local_transform *= glm::mat4_cast(_transform.rotation);
+    _transform.local_transform = glm::scale(_transform.local_transform, _transform.scale);
+
+    glm::mat3 m_mat3_local_transform = glm::mat3(_transform.local_transform);
+
+    _transform.up = m_mat3_local_transform * glm::vec3(0.0f, 1.0f, 0.0f);
+    _transform.forward = m_mat3_local_transform * glm::vec3(0.0f, 0.0f, -1.0f);
+    _transform.right = m_mat3_local_transform * glm::vec3(1.0f, 0.0f, 0.0f);
+
+    if(_transform.parent)
     {
-        m_world_transform = m_local_transform;
+        if(_registry.all_of<Core::Transform>(static_cast<entt::entity>(_transform.parent)))
+        {
+            Core::Transform _parent_transform = _registry.get<Core::Transform>(static_cast<entt::entity>(_transform.parent));
+            _transform.world_transform = _parent_transform.world_transform * _transform.local_transform;
+        }
+        else
+        {
+            _transform.world_transform = _transform.local_transform;
+        }
+    }
+    else {
+        _transform.world_transform = _transform.local_transform;
     }
 
-}
+    _transform.dirty = false;
 
-Core::Transform::~Transform()
-{
-    if(m_parent)
-        m_parent->UnRegisterChild(this);
-}
-
-#pragma region MatrixGetters
-
-const glm::mat4& Core::Transform::GetWorldTransformMatrix()
-{
-    if (!m_updated)
-        UpdateMatrix();
-    return m_world_transform;
-}
-
-const glm::mat4& Core::Transform::GetLocalTransformMatrix()
-{
-    if (!m_updated)
-        UpdateMatrix();
-    return m_local_transform;
-}
-
-#pragma endregion
-
-#pragma region Operators
-
-void Core::Transform::SetPosition(glm::vec3& _position)
-{
-    m_position = _position;
-    m_updated = false;
-}
-
-void Core::Transform::SetRotation(glm::quat& _rotation)
-{
-    m_rotation = _rotation;
-    m_updated = false;
-}
-
-void Core::Transform::SetScale(glm::vec3& _scale)
-{
-    m_scale = _scale;
-    m_updated = false;
-}
-
-void Core::Transform::Translate(glm::vec3& _translation)
-{
-    m_position += _translation;
-    m_updated = false;
-}
-
-void Core::Transform::Rotate(glm::quat& _rotation)
-{
-    m_rotation *= _rotation;
-    m_updated = false;
-}
-
-void Core::Transform::Scale(glm::vec3& _scale)
-{
-    m_scale = glm::vec3(m_scale.x * _scale.x, m_scale.y * _scale.y, m_scale.z * _scale.z);
-    m_updated = false;
-}
-
-void Core::Transform::Scale(float _factor)
-{
-    m_scale *= _factor;
-    m_updated = false;
-}
-
-#pragma endregion
-
-#pragma region Getters
-
-const glm::vec3& Core::Transform::GetPosition() const
-{
-    return m_position;
-}
-
-const glm::quat& Core::Transform::GetRotation() const
-{
-    return m_rotation;
-}
-
-const glm::vec3& Core::Transform::GetScale() const
-{
-    return m_scale;
-}
-
-const glm::vec3& Core::Transform::GetForward() const
-{
-    return m_forward;
-}
-
-const glm::vec3& Core::Transform::GetUp() const
-{
-    return m_up;
-}
-
-const glm::vec3& Core::Transform::GetRight() const
-{
-    return m_right;
-}
-
-#pragma endregion
-
-void Core::Transform::UpdateMatrix()
-{
-    m_local_transform = glm::mat4(1.0f);
-    m_local_transform = glm::translate(m_local_transform, m_position);
-    m_local_transform *= glm::mat4_cast(m_rotation);
-    m_local_transform = glm::scale(m_local_transform, m_scale);
-
-    glm::mat3 m_mat3_local_transform = glm::mat3(m_local_transform);
-
-    m_up = m_mat3_local_transform * glm::vec3(0.0f, 1.0f, 0.0f);
-    m_forward = m_mat3_local_transform * glm::vec3(0.0f, 0.0f, -1.0f);
-    m_right = m_mat3_local_transform * glm::vec3(1.0f, 0.0f, 0.0f);
-
-    if (m_parent)
+    if(_transform.children.size() != 0)
     {
-        m_world_transform = m_parent->GetWorldTransformMatrix() * m_local_transform;
-    }
-    else
-    {
-        m_world_transform = m_local_transform;
-    }
-
-    this->m_updated = true;
-
-    for (auto& it : m_children)
-    {
-        it->UpdateMatrix();
+        for (auto child: _transform.children) {
+            Core::Transform& _child_transform = _registry.get<Core::Transform>(static_cast<entt::entity>(child));
+            _child_transform.dirty = true;
+        }
     }
 }
-
-Core::Transform* Core::Transform::RegisterChild(Core::Transform* _child)
-{
-    m_children.push_back(_child);
-    return this;
-}
-
-void Core::Transform::UnRegisterChild(Core::Transform* _child)
-{
-    m_children.erase(find(m_children.begin(), m_children.end(), _child));
-} 

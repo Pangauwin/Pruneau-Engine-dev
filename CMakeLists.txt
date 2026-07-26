@@ -10,7 +10,7 @@ endif()
 
 add_subdirectory(vendor)
 add_subdirectory(engine)
-add_subdirectory(editor)
+#add_subdirectory(editor)
 add_subdirectory(sandbox)
 
 file(COPY ${CMAKE_SOURCE_DIR}/ressources DESTINATION ${CMAKE_BINARY_DIR})

@@ -1,6 +1,7 @@
 #pragma once
 
-#include "core/component.h"
+#include "core/component/component.h"
+#include "core/component/component_system.h"
 
 #include <glm/glm.hpp>
 #include <glm/ext/matrix_clip_space.hpp>
@@ -85,28 +86,22 @@ struct CameraConfig {
 	}
 };
 
-class Camera : public Component, AutoRegisterComponent<Camera>
+struct Camera : public Component
 {
-friend class Renderer::Renderer;
+	bool dirty = true;
+	CameraConfig config = CameraConfig(CAMERA_TYPE_PERSPECTIVE, 
+		new CameraPerspectiveData());
+	glm::mat4 projection = glm::mat4(1.0f);
 
+	unsigned int index = 0;
+};
+
+class CameraSystem : public Core::ComponentSystem
+{
 public:
-	explicit Camera(Entity* owner); // Used by editor
+	static unsigned int GetNextCameraIndex();
 
-	Camera(Entity* _owner, CameraConfig& _camera_config);
-	~Camera();
-
-	void SetCameraConfig(CameraConfig& _camera_config);
-	void SetAspect(float _aspect);
-
-	void OnEditorRender();
-	glm::mat4* GetPerspective();
-
-	CameraConfig config;
-
-	bool updated;
-
-
-private:
-	glm::mat4 m_projection;
+protected:
+	void OnUpdate() override;
 };
 }

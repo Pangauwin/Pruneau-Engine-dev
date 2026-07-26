@@ -1,6 +1,10 @@
 #pragma once
 
-#include "core/component.h"
+#include "core/component/component.h"
+#include "core/component/component_system.h"
+#include "glm/ext/matrix_float4x4.hpp"
+#include "glm/ext/vector_float3.hpp"
+#include "level/level.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
@@ -8,54 +12,31 @@
 
 namespace Core
 {
-class Transform : public Component, AutoRegisterComponent<Transform>
+
+struct Transform : public Component
 {
-public:
-	Transform(Entity* _owner, glm::vec3 _position = glm::vec3(), glm::quat _rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f), glm::vec3 _scale = glm::vec3(1.0f, 1.0f, 1.0f));
-	~Transform();
+	bool dirty = true;
+	glm::mat4 world_transform = glm::mat4(1.0f);
+	glm::mat4 local_transform = glm::mat4(1.0f);
 
-	const glm::mat4& GetWorldTransformMatrix();
-	const glm::mat4& GetLocalTransformMatrix();
+	glm::vec3 position = glm::vec3();
+	glm::quat rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+	glm::vec3 scale = glm::vec3({1, 1, 1});
 
-	void SetPosition(glm::vec3& _position);
-	void SetRotation(glm::quat& _rotation);
-	void SetScale(glm::vec3& _scale);
+	glm::vec3 forward = glm::vec3();
+	glm::vec3 up = glm::vec3();
+	glm::vec3 right = glm::vec3();
 
-	void Translate(glm::vec3& _translation);
-	void Rotate(glm::quat& _rotation);
-	void Scale(glm::vec3& _scale);
-	void Scale(float _factor);
+	Entity parent = 0;
+	std::vector<Entity> children;
+};
 
-	const glm::vec3& GetPosition() const;
-	const glm::quat& GetRotation() const;
-	const glm::vec3& GetScale() const;
+class TransformSystem: public ComponentSystem
+{
+private:
+	void UpdateMatrix(Core::Transform& _transform);
 
-	const glm::vec3& GetForward() const;
-	const glm::vec3& GetUp() const;
-	const glm::vec3& GetRight() const;
-
-	void OnEditorRender();
-
-public:
-	void UpdateMatrix();
-	Transform* RegisterChild(Transform* _child);
-	void UnRegisterChild(Transform* _child);
-
-public:
-	bool m_updated;
-	glm::mat4 m_world_transform;
-	glm::mat4 m_local_transform;
-
-	glm::vec3 m_position;
-	glm::quat m_rotation;
-	glm::vec3 m_scale;
-
-	glm::vec3 m_forward;
-	glm::vec3 m_up;
-	glm::vec3 m_right;
-
-	Transform* m_parent;
-
-	std::vector<Transform*> m_children;
+protected:
+	void OnUpdate() override;
 };
 }
