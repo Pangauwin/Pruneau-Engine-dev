@@ -47,6 +47,11 @@ void SandboxLayer::OnAttach() {
     //Level Creation
     Core::Level* lvl = new Core::Level("My level");
 
+    Core::Entity ground = lvl->CreateEntity("Ground");
+    lvl->AddComponent<Core::ModelRenderer>(ground);
+    lvl->GetComponent<Core::ModelRenderer>(ground).model_id = cube_id;
+    lvl->GetComponent<Core::Transform>(ground).scale = {100.f, 1.0f, 100.f};
+
     cam = lvl->CreateEntity("Camera");
     lvl->AddComponent<Core::Camera>(cam);
     lvl->AddComponent<Sandbox::SceneCamera>(cam);
@@ -56,6 +61,7 @@ void SandboxLayer::OnAttach() {
 
     cube = lvl->CreateEntity("Cube");
     lvl->AddComponent<Core::ModelRenderer>(cube);
+    lvl->GetComponent<Core::Transform>(cube).position = {0.0f, 2.0f, 0.0f};
 
     lvl->GetComponent<Core::ModelRenderer>(cube).model_id = cube_id;
     
