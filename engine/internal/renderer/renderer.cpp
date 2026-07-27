@@ -17,6 +17,8 @@
 #include "asset/asset_manager.h"
 #include "asset/asset.h"
 
+#include "renderer/skybox.h"
+
 #include <entt/entt.hpp>
 #include <string>
 
@@ -143,6 +145,9 @@ void Renderer::Renderer::PostRender()
 			glm::mat4 world_transform = _registry.get<Core::Transform>(_camera).world_transform;
 			glm::mat4 view = glm::inverse(world_transform);
 
+            if(m_skybox)
+                m_skybox->Draw(view, projection);
+
 			for(auto& entity: _registry.view<Core::ModelRenderer, Core::Transform>())
 			{
 				if(auto model_asset = 
@@ -166,6 +171,8 @@ void Renderer::Renderer::PostRender()
 	}
 
 	m_frame_buffer.UnBind();
+
+    //TODO: write an actual target for the renderer to know where it should render (directly on the screen or in a buffer/texture)
 
     glDisable(GL_DEPTH_TEST);
 

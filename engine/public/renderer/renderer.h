@@ -16,6 +16,8 @@ namespace Core {
 
 namespace Renderer {
 
+class Skybox;
+
 struct RendererConfig {
 
 };
@@ -43,6 +45,7 @@ private:
 
 public:
 	Framebuffer m_frame_buffer;
+	Skybox* m_skybox;
 
 private:
 	Platform::Window* m_window;

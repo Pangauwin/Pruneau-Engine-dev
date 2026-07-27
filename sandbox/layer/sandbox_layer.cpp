@@ -1,7 +1,5 @@
 #include "sandbox_layer.h"
 
-#include <entt/entt.hpp>
-#include <memory>
 #include <string>
 
 #include "asset/asset.h"
@@ -17,6 +15,9 @@
 #include "level/level_manager.h"
 
 #include "components/scene_camera.h"
+
+#include "core/application.h"
+#include "renderer/skybox.h"
 
 static Core::Entity cube = 0;
 static Core::Entity cam = 0;
@@ -42,6 +43,9 @@ void SandboxLayer::OnAttach() {
 
     //Level Creation
     Core::Level* lvl = new Core::Level("My level");
+
+    Renderer::Skybox* _skybox = new Renderer::Skybox("ressources/skybox/skybox.hdr");
+    Core::Application::Get()->m_renderer->m_skybox = _skybox;
 
     Core::Entity ground = lvl->CreateEntity("Ground");
     lvl->AddComponent<Core::ModelRenderer>(ground);
