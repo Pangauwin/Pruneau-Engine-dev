@@ -9,4 +9,5 @@ public:
 
     void OnAttach() override;
     void OnUpdate(float dt) override;
+    void OnGUIRender() override;
 };

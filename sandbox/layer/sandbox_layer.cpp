@@ -19,6 +19,10 @@
 #include "core/application.h"
 #include "renderer/skybox.h"
 
+#include "ui/imgui_manager.h"
+
+#include <imgui.h>
+
 static Core::Entity cube = 0;
 static Core::Entity cam = 0;
 
@@ -29,6 +33,8 @@ SandboxLayer::SandboxLayer() : Core::Layer("SandboxLayer") {
 void SandboxLayer::OnAttach() {
     // Component declaration
     (new Sandbox::SceneCameraSystem())->Connect();
+
+    Sandbox::ImGuiManager::Init();
 
     // Asset import
     Core::AssetID shader_id = Core::AssetManager::ImportAsset("ressources/shaders/tex.vert");
@@ -78,4 +84,18 @@ void SandboxLayer::OnUpdate(float dt)
     
     transform.position.x = sin(Time::last_frame_time) * 3.0f;
     transform.dirty = true;
+}
+
+void SandboxLayer::OnGUIRender()
+{
+    Sandbox::ImGuiManager::BeginFrame();
+
+    ImGui::Begin("Debug Window");
+
+    ImGui::Text("FPS: %.1f", Time::frame_per_second);
+    ImGui::Text("Delta time: %.4fs", Time::delta_time);
+
+    ImGui::End();
+
+    Sandbox::ImGuiManager::EndFrame();
 }

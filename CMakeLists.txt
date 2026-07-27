@@ -14,3 +14,6 @@ add_subdirectory(engine)
 add_subdirectory(sandbox)
 
 file(COPY ${CMAKE_SOURCE_DIR}/ressources DESTINATION ${CMAKE_BINARY_DIR})
+
+#set(CMAKE_BUILD_TYPE Release)
+message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")

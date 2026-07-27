@@ -20,4 +20,6 @@ target_include_directories(Sandbox
 target_link_libraries(PruneauEngine
     PUBLIC
         glm
+        imgui
+        imguizmo
 )
