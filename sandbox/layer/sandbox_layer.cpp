@@ -16,9 +16,6 @@
 #include "level/level.h"
 #include "level/level_manager.h"
 
-#include "renderer/mesh.h"
-#include "renderer/model.h"
-
 #include "components/scene_camera.h"
 
 static Core::Entity cube = 0;
@@ -41,8 +38,7 @@ void SandboxLayer::OnAttach() {
     Core::AssetManager::GetAsset<Core::MaterialAsset>(material_id)
         ->SetTexture("texture_diffuse_1", texture_id);
 
-    std::get<std::shared_ptr<Core::MeshAsset>>(Core::AssetManager::GetAsset<Core::ModelAsset>(cube_id)->GetModel().get()->GetMeshes()[0])->GetMesh()->m_material =
-        Core::AssetManager::GetAsset<Core::MaterialAsset>(material_id);
+    Core::AssetManager::GetAsset<Core::ModelAsset>(cube_id)->GetMeshes()[0].materialID = material_id;
 
     //Level Creation
     Core::Level* lvl = new Core::Level("My level");

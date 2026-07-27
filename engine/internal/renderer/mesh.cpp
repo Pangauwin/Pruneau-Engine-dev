@@ -4,11 +4,8 @@
 
 #include <glad/glad.h>
 
-#include "asset/asset_manager.h"
-#include "renderer/shader.h"
-
-Renderer::Mesh::Mesh(const std::vector<Vertex>& _vertices, const std::vector<unsigned int>& _indices, std::shared_ptr<Core::MaterialAsset> _material):
-	m_vertices(_vertices), m_indices(_indices), m_material(_material)
+Renderer::Mesh::Mesh(const std::vector<Vertex>& _vertices, const std::vector<unsigned int>& _indices):
+	m_vertices(_vertices), m_indices(_indices)
 {
 #pragma region OpenGL
 	glGenVertexArrays(1, &VAO);
@@ -138,30 +135,3 @@ Renderer::Mesh* Renderer::Mesh::CreateCube()
 */
 
 // TODO : recreate the upper functions, via the asset manager
-
-void Renderer::Mesh::Draw(const glm::mat4& _view, const glm::mat4& _model, const glm::mat4& _perspective)
-{
-    if (m_material)
-    {
-        m_material->Bind();
-        
-        m_material->GetShaderAsset()->GetShader()->SetMat4("view", _view);
-        m_material->GetShaderAsset()->GetShader()->SetMat4("model", _model);
-        m_material->GetShaderAsset()->GetShader()->SetMat4("perspective", _perspective);
-    }
-
-    else
-    {
-        Core::AssetManager::error_material->Bind();
-
-        Core::AssetManager::error_material->GetShaderAsset()->GetShader()->SetMat4("view", _view);
-        Core::AssetManager::error_material->GetShaderAsset()->GetShader()->SetMat4("model", _model);
-        Core::AssetManager::error_material->GetShaderAsset()->GetShader()->SetMat4("perspective", _perspective);
-    }
-
-    glBindVertexArray(VAO);
-    glDrawElements(GL_TRIANGLES, m_indices.size(), GL_UNSIGNED_INT, 0);
-    glBindVertexArray(0);
-
-    glActiveTexture(GL_TEXTURE0);
-}

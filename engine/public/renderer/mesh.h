@@ -1,7 +1,6 @@
 #pragma once
 
 #include <vector>
-#include <memory>
 #include <glm/glm.hpp>
 
 #include "asset/asset.h"
@@ -18,24 +17,17 @@ struct Vertex {
 
 class Mesh {
 public:
-	Mesh(const std::vector<Vertex>& _vertices, const std::vector<unsigned int>& _indices, std::shared_ptr<Core::MaterialAsset> _material);
+	Mesh(const std::vector<Vertex>& _vertices, const std::vector<unsigned int>& _indices);
 	~Mesh();
 
 	/*static Mesh* CreateTriangle();
 	static Mesh* CreatePlane();
 	static Mesh* CreateCube();*/
-
 	// TODO : recreate these functions
 
-	void Draw(const glm::mat4& _view, const glm::mat4& _model, const glm::mat4& _perspective);
-
-	mutable std::shared_ptr<Core::MaterialAsset> m_material;
-
-private:
+	unsigned int VAO, VBO, EBO;
 	std::vector<Vertex> m_vertices;
 	std::vector<unsigned int> m_indices;
-
-	unsigned int VAO, VBO, EBO;
 };
 
 }

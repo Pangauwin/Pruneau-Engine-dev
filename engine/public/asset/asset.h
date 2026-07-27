@@ -8,7 +8,7 @@
 #include <unordered_map>
 #include <variant>
 
-#include <glm/fwd.hpp>
+#include <glm/glm.hpp>
 
 namespace Renderer
 {
@@ -109,9 +109,7 @@ public:
 class MeshAsset : public Asset
 {
 public:
-	MeshAsset(std::string _name, AssetID _id, const std::vector<Renderer::Vertex>& vertices, const std::vector<unsigned int>& indices, std::shared_ptr<MaterialAsset> _shader);
-
-	void Draw(const glm::mat4& _view, const glm::mat4& _model, const glm::mat4& _perspective);
+	MeshAsset(std::string _name, AssetID _id, const std::vector<Renderer::Vertex>& vertices, const std::vector<unsigned int>& indices);
 
 	const Renderer::Mesh* GetMesh() const { return m_mesh.get(); }
 
@@ -119,15 +117,28 @@ private:
 	std::unique_ptr<Renderer::Mesh> m_mesh;
 };
 
+struct ModelReadyMeshData
+{
+	AssetID meshID;
+	AssetID materialID;
+	glm::mat4 mesh_transform = glm::mat4(1.0f);	
+};
+
 class ModelAsset : public Asset
 {
 public:
-	ModelAsset(std::string _name, AssetID _id, std::vector<std::tuple<glm::mat4, std::shared_ptr<Core::MeshAsset>>> _meshes);
+	ModelAsset(std::string _name, AssetID _id, std::vector<ModelReadyMeshData>& _meshes);
+	// 1st arg: mesh ID; 2nd arg: material ID; 3rd arg: transform of the object
 	~ModelAsset();
 
-	std::shared_ptr<Renderer::Model> GetModel() { return m_model; }
+	void Draw(const glm::mat4& _projection, const glm::mat4& _view, const glm::mat4& _model);
+
+	std::vector<ModelReadyMeshData>& GetMeshes()
+	{
+		return m_meshes;
+	}
 
 private:
-	std::shared_ptr<Renderer::Model> m_model;
+	std::vector<ModelReadyMeshData> m_meshes; // 1st arg: mesh id; 2nd arg: material id; 3rd arg: model transform
 };
 }

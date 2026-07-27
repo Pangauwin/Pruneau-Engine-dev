@@ -16,6 +16,7 @@
 #include <glm/glm.hpp>
 
 #include <stb_image.h>
+#include <vector>
 
 #include "core/application.h"
 #include "glm/fwd.hpp"
@@ -307,7 +308,7 @@ static ParsedMesh ParseMesh(aiMesh* _mesh)
 
 Core::AssetID Core::AssetManager::BuildModelAsset(const ParsedModel& parsed)
 {
-	std::vector<std::tuple<glm::mat4, std::shared_ptr<Core::MeshAsset>>> _model_mesh_container;
+	std::vector<ModelReadyMeshData> _model_mesh_data;
 
 	for (const ParsedMesh& mesh : parsed.meshes)
 	{
@@ -317,17 +318,18 @@ Core::AssetID Core::AssetManager::BuildModelAsset(const ParsedModel& parsed)
 			"Mesh_" + std::to_string(s_next_asset_id),
 			s_next_asset_id,
 			mesh.vertices,
-			mesh.indices,
-			default_material
+			mesh.indices
 		);
 
 		m_assets[s_next_asset_id] = mesh_asset;
 
-		std::tuple<glm::mat4, std::shared_ptr<Core::MeshAsset>> _t;
+		ModelReadyMeshData _data = {
+			.meshID = s_next_asset_id,
+			.materialID = default_material->GetID(),
+			.mesh_transform = mesh.transform
+		};
 
-		_t = std::make_tuple(mesh.transform, mesh_asset);
-
-		_model_mesh_container.push_back(_t);
+		_model_mesh_data.push_back(_data);
 	}
 
 	s_next_asset_id++;
@@ -335,7 +337,7 @@ Core::AssetID Core::AssetManager::BuildModelAsset(const ParsedModel& parsed)
 	auto model = std::make_shared<ModelAsset>(
 		"Model_" + std::to_string(s_next_asset_id),
 		s_next_asset_id,
-		_model_mesh_container
+		_model_mesh_data
 	);
 
 	m_assets[s_next_asset_id] = model;

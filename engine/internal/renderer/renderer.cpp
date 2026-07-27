@@ -17,8 +17,6 @@
 #include "asset/asset_manager.h"
 #include "asset/asset.h"
 
-#include "renderer/model.h"
-
 #include <entt/entt.hpp>
 #include <string>
 
@@ -152,7 +150,7 @@ void Renderer::Renderer::PostRender()
 				{
 					glm::mat4 _model = _registry.get<Core::Transform>(entity).world_transform;
 
-					model_asset->GetModel().get()->Draw(view, _model, projection);
+                    model_asset->Draw(projection, view, _model);
 				}
 			}
 		}

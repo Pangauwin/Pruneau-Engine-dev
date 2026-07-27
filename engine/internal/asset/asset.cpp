@@ -7,6 +7,8 @@
 
 #include "asset/asset_manager.h"
 
+#include <glad/glad.h>
+
 Core::AssetGUID Core::GenerateGUID()
 {
 	static thread_local std::mt19937_64 rng(std::random_device{}());
@@ -20,23 +22,10 @@ Core::AssetGUID Core::GenerateGUID()
 
 #include "renderer/mesh.h"
 
-Core::MeshAsset::MeshAsset(std::string _name, AssetID _id, const std::vector<Renderer::Vertex>& vertices, const std::vector<unsigned int>& indices, std::shared_ptr<MaterialAsset> _material) 
+Core::MeshAsset::MeshAsset(std::string _name, AssetID _id, const std::vector<Renderer::Vertex>& vertices, const std::vector<unsigned int>& indices) 
 	: Asset(std::move(_name), _id) 
 {
-	if (_material)
-	{
-		m_mesh = std::make_unique<Renderer::Mesh>(vertices, indices, _material);
-	}
-	else
-	{
-		m_mesh = std::make_unique<Renderer::Mesh>(vertices, indices, Core::AssetManager::error_material);
-		Core::LogMessage("The material assigned to the model is not valid, error material assigned instead. ModelID:" + std::to_string(_id));
-	}
-}
-
-void Core::MeshAsset::Draw(const glm::mat4& _view, const glm::mat4& _model, const glm::mat4& _perspective)
-{
-	m_mesh->Draw(_view, _model, _perspective);
+	m_mesh = std::make_unique<Renderer::Mesh>(vertices, indices);
 }
 
 #pragma endregion
@@ -70,11 +59,45 @@ Core::ShaderAsset::ShaderAsset(std::string _name, AssetID _id, const char* _vert
 
 #pragma region ModelAsset
 
-#include "renderer/model.h"
+Core::ModelAsset::ModelAsset(std::string _name, AssetID _id, std::vector<ModelReadyMeshData>& _meshes)
+	: Asset(_name, _id), m_meshes(std::move(_meshes)) 
+	{} // TODO: Check if here the mat4 is still there
 
-Core::ModelAsset::ModelAsset(std::string _name, AssetID _id, std::vector<std::tuple<glm::mat4, std::shared_ptr<Core::MeshAsset>>> _meshes)
-	: Asset(_name, _id), m_model(std::make_shared<Renderer::Model>(std::move(_meshes))) {}
 
+void Core::ModelAsset::ModelAsset::Draw(const glm::mat4& _projection, const glm::mat4& _view, const glm::mat4& _model)
+{
+	for(auto& mesh: m_meshes)
+	{
+		std::shared_ptr<Core::MaterialAsset> _mat = Core::AssetManager::GetAsset<Core::MaterialAsset>(mesh.materialID);
+		std::shared_ptr<Core::MeshAsset> _mesh = Core::AssetManager::GetAsset<Core::MeshAsset>(mesh.meshID);
+		glm::mat4 transform = mesh.mesh_transform;
+		
+		if (_mat)
+		{
+			_mat->Bind();
+			
+			_mat->GetShaderAsset()->GetShader()->SetMat4("view", _view);
+			_mat->GetShaderAsset()->GetShader()->SetMat4("model", _model * transform);
+			_mat->GetShaderAsset()->GetShader()->SetMat4("perspective", _projection);
+		}
+
+		else
+		{
+			Core::AssetManager::error_material->Bind();
+
+			Core::AssetManager::error_material->GetShaderAsset()->GetShader()->SetMat4("view", _view);
+			Core::AssetManager::error_material->GetShaderAsset()->GetShader()->SetMat4("model", _model * transform);
+			Core::AssetManager::error_material->GetShaderAsset()->GetShader()->SetMat4("perspective", _projection);
+		}
+
+		glBindVertexArray(_mesh->GetMesh()->VAO);
+		glDrawElements(GL_TRIANGLES, _mesh->GetMesh()->m_indices.size(), GL_UNSIGNED_INT, 0);
+		glBindVertexArray(0);
+
+		glActiveTexture(GL_TEXTURE0);
+	}
+
+}
 
 namespace Core {
 	ModelAsset::~ModelAsset() = default;
