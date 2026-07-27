@@ -46,6 +46,9 @@ Renderer::Renderer::Renderer(Platform::Window* _window) :
 {
 	_current_renderer = this;
 
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
+
     glGenVertexArrays(1, &screen_vao);
     glGenBuffers(1, &screen_vbo);
 
