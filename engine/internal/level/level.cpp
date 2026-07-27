@@ -34,7 +34,7 @@ Core::Entity Core::Level::CreateEntity(const char* _name, Entity _parent)
 	if(m_registry.valid(parent))
 	{
 		m_registry.emplace<Parent>(ent, _parent);
-		Children _children = m_registry.get_or_emplace<Children>(parent);
+		Children& _children = m_registry.get_or_emplace<Children>(parent);
 		_children.entities.emplace_back(entt::to_integral(ent));
 	}
 
@@ -48,6 +48,7 @@ void Core::Level::DestroyEntity(Core::Entity _entity)
 	if(!m_registry.valid(ent))
 	{
 		Core::LogMessageError("Could not destroy Entity " + std::to_string(_entity) + ": entity ID not found in registry");
+		return;
 	}
 
 	if(m_registry.all_of<Children>(ent))
@@ -135,6 +136,7 @@ void Core::Level::OnUpdate(float dt)
 void Core::Level::OnLateUpdate(float dt)
 {
 	_dispatcher.trigger(Core::OnLateUpdate{dt});
+	HandleEntityDestruction();
 }
 
 void Core::Level::OnRender()
