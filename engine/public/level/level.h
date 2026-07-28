@@ -90,6 +90,12 @@ public:
     {
         return m_registry.get<T>(static_cast<entt::entity>(_entity));
     }
+
+    template <typename T>
+    T& GetComponent(entt::entity _entity)
+    {
+        return m_registry.get<T>(_entity);
+    }
     
 private:
     void HandleEntityDestruction();

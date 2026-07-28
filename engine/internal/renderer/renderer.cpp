@@ -49,6 +49,8 @@ Renderer::Renderer::Renderer(Platform::Window* _window) :
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
 
+    glEnable(GL_DEPTH_TEST);
+
     glGenVertexArrays(1, &screen_vao);
     glGenBuffers(1, &screen_vbo);
 
@@ -175,20 +177,7 @@ void Renderer::Renderer::PostRender()
 
 	m_frame_buffer.UnBind();
 
-    //TODO: write an actual target for the renderer to know where it should render (directly on the screen or in a buffer/texture)
-
-    glDisable(GL_DEPTH_TEST);
-
-    glUseProgram(screen_program);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, m_frame_buffer.m_color_attachment);
-
-    glUniform1i(glGetUniformLocation(screen_program, "screenTexture"), 0);
-
-    glBindVertexArray(screen_vao);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
-
-    glEnable(GL_DEPTH_TEST);
+    //TODO: Write an actual target for the renderer to know where to render (texture ? screen ?)
 }
 
 void Renderer::Renderer::PreGUIRender()

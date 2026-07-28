@@ -12,6 +12,12 @@ public:
 	Framebuffer(uint32_t _width, uint32_t _height);
 	~Framebuffer();
 
+	Framebuffer(const Framebuffer&) = delete;
+    Framebuffer& operator=(const Framebuffer&) = delete;
+
+    Framebuffer(Framebuffer&&) = default;
+    Framebuffer& operator=(Framebuffer&&) = default;
+
 	void Bind();
 	void UnBind();
 

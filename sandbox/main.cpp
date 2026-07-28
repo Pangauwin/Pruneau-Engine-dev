@@ -10,6 +10,6 @@ int main()
     params.window_params.width = 1080;
 
     Core::Application app(params);
-    app.PushLayer(new SandboxLayer());
+    app.PushLayer(new Sandbox::SandboxLayer());
     app.Run();
 }

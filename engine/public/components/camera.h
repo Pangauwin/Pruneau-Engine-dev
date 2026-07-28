@@ -47,7 +47,7 @@ struct CameraOrthographicData : public CameraData
 
 struct CameraConfig {
 	CAMERA_TYPE type;
-	CameraData* data;
+	CameraData* data; //TODO : use a variant instead
 
 	CameraConfig(CAMERA_TYPE _type, CameraData* _data) : type(_type), data(nullptr)
 	{

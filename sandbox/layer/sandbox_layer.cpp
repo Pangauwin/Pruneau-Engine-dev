@@ -1,5 +1,6 @@
 #include "sandbox_layer.h"
 
+#include <numbers>
 #include <string>
 
 #include "asset/asset.h"
@@ -11,20 +12,34 @@
 #include "core/layer.h"
 
 #include "core/time.h"
+#include "glm/ext/quaternion_trigonometric.hpp"
+#include "imgui.h"
 #include "level/level.h"
 #include "level/level_manager.h"
 
 #include "components/scene_camera.h"
 
 #include "core/application.h"
+#include "renderer/renderer.h"
 #include "renderer/skybox.h"
 
 #include "ui/imgui_manager.h"
+#include "ui/windows/debug_window.h"
+#include "ui/windows/level_editor.h"
+#include "ui/windows/properties_window.h"
+#include "ui/windows/viewport.h"
 
-#include <imgui.h>
+#include <glad/glad.h>
 
-static Core::Entity cube = 0;
+static Core::Entity model = 0;
 static Core::Entity cam = 0;
+
+static float speed_multiplier = 1.0f;
+
+namespace Sandbox {
+
+Core::AssetID model_id = 0;
+FocusObject focused_object = {.type=FocusType::None, .id=0};
 
 SandboxLayer::SandboxLayer() : Core::Layer("SandboxLayer") {
 
@@ -38,25 +53,20 @@ void SandboxLayer::OnAttach() {
 
     // Asset import
     Core::AssetID shader_id = Core::AssetManager::ImportAsset("ressources/shaders/tex.vert");
-    Core::AssetID cube_id = Core::AssetManager::ImportAsset("ressources/models/cube.fbx");
-    Core::AssetID texture_id = Core::AssetManager::ImportAsset("ressources/textures/texture.png");
+    model_id = Core::AssetManager::ImportAsset("ressources/models/tralalero-tralala.fbx");
+    Core::AssetID texture_id = Core::AssetManager::ImportAsset("ressources/textures/tralalero-tralala.png");
 
     Core::AssetID material_id = Core::AssetManager::CreateMaterial(shader_id);
     Core::AssetManager::GetAsset<Core::MaterialAsset>(material_id)
         ->SetTexture("texture_diffuse_1", texture_id);
 
-    Core::AssetManager::GetAsset<Core::ModelAsset>(cube_id)->GetMeshes()[0].materialID = material_id;
+    Core::AssetManager::GetAsset<Core::ModelAsset>(model_id)->GetMeshes()[0].materialID = material_id;
 
     //Level Creation
     Core::Level* lvl = new Core::Level("My level");
 
     Renderer::Skybox* _skybox = new Renderer::Skybox("ressources/skybox/skybox.hdr");
     Core::Application::Get()->m_renderer->m_skybox = _skybox;
-
-    Core::Entity ground = lvl->CreateEntity("Ground");
-    lvl->AddComponent<Core::ModelRenderer>(ground);
-    lvl->GetComponent<Core::ModelRenderer>(ground).model_id = cube_id;
-    lvl->GetComponent<Core::Transform>(ground).scale = {100.f, 1.0f, 100.f};
 
     cam = lvl->CreateEntity("Camera");
     lvl->AddComponent<Core::Camera>(cam);
@@ -65,37 +75,45 @@ void SandboxLayer::OnAttach() {
     lvl->GetComponent<Core::Camera>(cam).index = 1;
     lvl->camera_index = 1;
 
-    cube = lvl->CreateEntity("Cube");
-    lvl->AddComponent<Core::ModelRenderer>(cube);
-    lvl->GetComponent<Core::Transform>(cube).position = {0.0f, 2.0f, 0.0f};
+    model = lvl->CreateEntity("Model");
+    lvl->AddComponent<Core::ModelRenderer>(model);
 
-    lvl->GetComponent<Core::ModelRenderer>(cube).model_id = cube_id;
+    lvl->GetComponent<Core::ModelRenderer>(model).model_id = model_id;
     
-    lvl->GetComponent<Core::Transform>(cam).position = {2.0f, 5.0f, 10.0f};
+    lvl->GetComponent<Core::Transform>(cam).position = {2.0f, 5.0f, 20.0f};
 
     Core::LevelManager::SwitchLevel(lvl);
 }
 
-void SandboxLayer::OnUpdate(float dt)
-{
+void SandboxLayer::OnUpdate(float dt) {
     Core::Level* lvl = Core::LevelManager::GetCurrentLevel();
 
-    Core::Transform& transform = lvl->GetComponent<Core::Transform>(cube);
+    Core::Transform& transform = lvl->GetComponent<Core::Transform>(model);
+
+    transform.rotation = glm::angleAxis((float)Time::last_frame_time * speed_multiplier * 2 * (float)std::numbers::pi, transform.up);
     
-    transform.position.x = sin(Time::last_frame_time) * 3.0f;
     transform.dirty = true;
 }
 
 void SandboxLayer::OnGUIRender()
 {
+    glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+
     Sandbox::ImGuiManager::BeginFrame();
 
-    ImGui::Begin("Debug Window");
+    Sandbox::DrawDebugWindow();
+    Sandbox::DrawLevelEditorWindow();
+    Sandbox::DrawViewport();
+    Sandbox::DrawPropertiesWindow();
 
-    ImGui::Text("FPS: %.1f", Time::frame_per_second);
-    ImGui::Text("Delta time: %.4fs", Time::delta_time);
+    ImGui::Begin("Tralalero tralala");
+
+    ImGui::DragFloat("speed", &speed_multiplier);
 
     ImGui::End();
 
     Sandbox::ImGuiManager::EndFrame();
+}
+
 }

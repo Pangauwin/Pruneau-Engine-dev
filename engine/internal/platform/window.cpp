@@ -158,7 +158,7 @@ Platform::Window::Window(WindowParams& _params) : params(_params), m_glfw_window
 	glfwSetKeyCallback(m_glfw_window, key_callback);
 	glfwSetCharCallback(m_glfw_window, char_callback);
 
-	glfwSwapInterval(0);
+	glfwSwapInterval(1);
 }
 
 Platform::Window::~Window()
