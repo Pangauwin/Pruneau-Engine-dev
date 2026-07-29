@@ -22,6 +22,10 @@ ImVec2 Sandbox::viewport_position = {0.0f, 0.0f};
 
 static ImGuizmo::MODE s_guizmo_mode = ImGuizmo::MODE::LOCAL;
 static ImGuizmo::OPERATION s_guizmo_operation = ImGuizmo::OPERATION::TRANSLATE;
+static bool s_snap = false;
+static float s_transform_snap[3] = {1.f, 1.f, 1.f};
+static float s_scale_snap[3] = {1.f, 1.f, 1.f};
+static float s_rotate_snap[3] = {45.f, 45.f, 45.f};
 
 void Sandbox::DrawViewport() {
     ImGuiWindowFlags window_flags = ImGuiWindowFlags_None;
@@ -94,7 +98,13 @@ void Sandbox::DrawViewport() {
             glm::value_ptr(projection), 
             s_guizmo_operation,
             s_guizmo_mode, 
-            glm::value_ptr(handle_world_matrix)
+            glm::value_ptr(handle_world_matrix),
+            NULL,
+            s_snap ? 
+                s_guizmo_operation == ImGuizmo::TRANSLATE ?  &s_transform_snap[0] :
+                s_guizmo_operation == ImGuizmo::ROTATE ? &s_rotate_snap[0] :
+                s_guizmo_operation == ImGuizmo::SCALE ? &s_scale_snap[0]
+            : NULL : NULL
         );
 
         if (ImGuizmo::IsUsing())
@@ -154,6 +164,8 @@ void Sandbox::DrawViewport() {
         s_guizmo_operation = ImGuizmo::SCALE;
     }
 
+    ImGui::SameLine();
+    ImGui::Checkbox("Snap", &s_snap);
 
     ImGui::End();
 
