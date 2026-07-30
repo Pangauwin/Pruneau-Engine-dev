@@ -35,13 +35,9 @@ Assets used in this scene : [PSX style office pack](https://valsekamerplant.itch
 
 ## Getting Started
 
-#### For now, editor code and engine code are in the same project. As the editor is only a layer of the executable, I am planning to separate the editor and the engine layer. In the future, the engine will be a lib file and the editor an application.
-
-#### A wiki is available 👉 [here](https://github.com/Pangauwin/Pruneau-Renderer/wiki) 👈 (still in development too)
-
 ### Prerequisites
 
-- C++17 compatible compiler
+- C++20 compatible compiler (compiled on clang, other compilers might need adaptations)
 - [CMake](https://cmake.org/) (>=3.16)
 - [OpenGL](https://www.opengl.org/) (>=4.6)
 - Git (clone the repo and the submodules)
