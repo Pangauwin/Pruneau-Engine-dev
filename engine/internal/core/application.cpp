@@ -43,7 +43,11 @@ void Core::Application::Init()
 
 	LevelManager::Init();
 
-	(new TransformSystem())->Connect();
+	TransformSystem* transform_system = new TransformSystem(); // TODO : Make this in a proper scope, destroy them at the end
+
+	transform_system->Register();
+	transform_system->Connect();
+
 	(new CameraSystem())->Connect();
 
 	for(Layer* l: m_layer_stack)

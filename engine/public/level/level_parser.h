@@ -3,17 +3,20 @@
 #include "level.h"
 #include <cstdint>
 #include <filesystem>
+#include <string>
 
 namespace Core
 {
 
+using Entity = std::uint32_t;
+
 class LevelParser
 {
 public:
-    Core::Level& LoadLevelData(std::filesystem::path _path);
-    std::filesystem::path SaveLevelData(Core::Level& _data);
+    static Core::Level& LoadLevelData(std::filesystem::path _path);
+    static std::filesystem::path SaveLevelData(Core::Level& _data);
 
-    void SetLevelDataFileLocation(std::filesystem::path _path);
+    static void SetLevelDataFileLocation(std::filesystem::path _path);
 
 private:
     LevelParser();
@@ -25,5 +28,4 @@ struct LevelHeader
     std::uint32_t magic = 'LVL\0';
     std::uint16_t format_version = 1;
 };
-
 }

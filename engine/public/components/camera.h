@@ -101,6 +101,20 @@ class CameraSystem : public Core::ComponentSystem
 public:
 	static unsigned int GetNextCameraIndex();
 
+	void Register() override {
+		ComponentRegistry::RegisterComponent<Camera>(
+			"Camera",
+			[] (SaveArchive& ar, const Camera& t)
+			{
+				// TODO: Implement
+			},
+			[] (LoadArchive& ar, Camera& t)
+			{
+				// TODO: Implement
+			}
+		);
+	}
+
 protected:
 	void OnUpdate() override;
 };

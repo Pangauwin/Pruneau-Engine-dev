@@ -11,6 +11,8 @@ public:
 
     void Connect();
 
+    virtual void Register() = 0;
+
 protected:
     virtual void OnAwake() {}
     virtual void OnStart() {}

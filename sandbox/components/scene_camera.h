@@ -20,6 +20,9 @@ struct SceneCamera : public Core::Component
 class SceneCameraSystem : public Core::ComponentSystem
 {
     void OnUpdate() override;
+    void Register() override {
+        
+    }
 };
 
 }
