@@ -1,4 +1,5 @@
 #include "level/level_parser.h"
+#include "cereal/external/rapidjson/document.h"
 #include "core/application.h"
 #include "core/component/component.h"
 #include "entt/entity/entity.hpp"
@@ -11,10 +12,11 @@
 #include <cereal/archives/json.hpp>
 
 #include <cereal/types/vector.hpp>
+#include <cereal/types/string.hpp>
+#include <cstddef>
 #include <fstream>
+#include <iterator>
 #include <string>
-#include <vector>
-
 
 #include <entt/entt.hpp>
 
@@ -26,19 +28,26 @@ std::filesystem::path Core::LevelParser::SaveLevelData(Core::Level& data)
     std::filesystem::path _path = std::string(level_data_file_location.c_str()) + "/" + data.name + ".plvl";
 
     std::ofstream file(_path);
-    cereal::JSONOutputArchive archive( file  );
+    Core::SaveArchive archive( file  );
 
     Core::Level* _lvl = Core::LevelManager::GetCurrentLevel();
     entt::registry& _reg = _lvl->GetRegistry();
     auto view = _reg.view<Entity_info>();
 
+    const std::size_t size = view.size();
+
+    archive(cereal::make_nvp("Name", _lvl->name));
+    archive(cereal::make_nvp("Camera Index", _lvl->camera_index));
+
+    archive(cereal::make_nvp("Entities", cereal::make_size_tag(size)));
+
     for(auto& _ent : view)
     {
-        archive.setNextName(std::to_string(entt::to_integral(_ent)).c_str());
         archive.startNode();
 
-        Entity_info& info = _lvl->GetComponent<Entity_info>(_ent);
+        archive(cereal::make_nvp("ID", entt::to_integral(_ent)));
 
+        Entity_info& info = _lvl->GetComponent<Entity_info>(_ent);
         archive(cereal::make_nvp("Name", info.name));
 
         archive.setNextName("Components");
@@ -47,11 +56,10 @@ std::filesystem::path Core::LevelParser::SaveLevelData(Core::Level& data)
         for(const auto& [id, component]: ComponentRegistry::m_component_registry)
         {
             if(!component.Has(_reg, _ent)) continue;
-
+            
+            archive.setNextName(component.name.c_str());
             archive.startNode();
         
-            archive(cereal::make_nvp("Type", component.name));
-
             component.Save(archive, _reg, _ent);
 
             archive.finishNode();
@@ -68,33 +76,36 @@ std::filesystem::path Core::LevelParser::SaveLevelData(Core::Level& data)
 
 void Core::LevelParser::SetLevelDataFileLocation(std::filesystem::path _path)
 {
-
+    level_data_file_location = _path;
 }
 
-struct SerializedEntity
+Core::Level* Core::LevelParser::LoadLevelData(std::filesystem::path _path)
 {
-    std::uint32_t id;
+    std::ifstream input_file(_path);
 
-    std::vector<std::string> components_names;
+
+    std::string json ((std::istreambuf_iterator<char>(input_file)), std::istreambuf_iterator<char>());
+
+    rapidjson::Document doc;
+
+    doc.Parse(json.c_str());
+
+    if(doc.HasParseError())
+    {
+        Core::LogMessageError("Failed to load level: JSON parse error");
+        return nullptr;
+    }
+
+    Core::Level* new_level = new Level(doc.HasMember("Name") && doc["Name"].IsString() ? doc["Name"].GetString() : "Anonyme level");
+
+    return new_level;
+}
+
+
+struct SavedEntity
+{
+    std::string name = "";
+    std::uint32_t id = 0;
 
     
-};
-
-struct LevelData
-{
-    std::string name;
-
-    std::vector<Core::Entity> _entities;
-
-    template<class Archive>
-    void save(Archive& ar) const
-    {
-        //ar(name, _entities);
-    }
-
-    template<class Archive>
-    void load(Archive& ar)
-    {
-
-    }
 };

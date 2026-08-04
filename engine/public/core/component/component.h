@@ -12,17 +12,15 @@
 #include "entt/core/fwd.hpp"
 #include "entt/entity/fwd.hpp"
 
-namespace Core {
+#include "level/level_parser.h"
 
-using SaveArchive = cereal::JSONOutputArchive;
-using LoadArchive = cereal::JSONInputArchive;
+namespace Core {
 
 struct Component {};
 
 struct ComponentInfo
 {
     std::string name = "";
-    size_t size = 0;
 
     std::uint16_t version = 0;
 
@@ -56,7 +54,6 @@ public:
         ComponentInfo info;
 
         info.name = std::move(name);
-        info.size = sizeof(T);
 
         info.Has = [] (entt::registry& _reg, entt::entity _ent) 
         {

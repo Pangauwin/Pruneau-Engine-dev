@@ -56,3 +56,7 @@ target_include_directories(entt INTERFACE entt/src)
 # Cereal
 add_library(cereal INTERFACE)
 target_include_directories(cereal INTERFACE cereal/include)
+
+# RapidJSON
+add_library(rapidjson INTERFACE)
+target_include_directories(rapidjson INTERFACE rapidjson/include)

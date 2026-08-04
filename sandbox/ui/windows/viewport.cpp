@@ -66,65 +66,70 @@ void Sandbox::DrawViewport() {
             }
         }
 
-        Core::Transform transform = _level->GetComponent<Core::Transform>(focused_object.id);
 
-        glm::mat4 parent_world = glm::mat4(1.0f);
-        if (_level->GetRegistry().all_of<Core::Parent>(static_cast<entt::entity>(focused_object.id)))
+        if(_level->GetRegistry().valid(static_cast<entt::entity>(focused_object.id)))
         {
-            Core::Entity parent = _level->GetComponent<Core::Parent>(focused_object.id).entity;
-            if(parent)
-                parent_world = _level->GetComponent<Core::Transform>(parent).world_transform;
-        }
+                
+            Core::Transform transform = _level->GetComponent<Core::Transform>(focused_object.id);
 
-        glm::mat4 local_matrix = glm::translate(glm::mat4(1.0f), transform.position) ;
-        local_matrix *= glm::mat4_cast(transform.rotation);
-        local_matrix = glm::scale(local_matrix, transform.scale);
+            glm::mat4 parent_world = glm::mat4(1.0f);
+            if (_level->GetRegistry().all_of<Core::Parent>(static_cast<entt::entity>(focused_object.id)))
+            {
+                Core::Entity parent = _level->GetComponent<Core::Parent>(focused_object.id).entity;
+                if(parent)
+                    parent_world = _level->GetComponent<Core::Transform>(parent).world_transform;
+            }
 
-        glm::mat4 handle_world_matrix = transform.world_transform;
+            glm::mat4 local_matrix = glm::translate(glm::mat4(1.0f), transform.position) ;
+            local_matrix *= glm::mat4_cast(transform.rotation);
+            local_matrix = glm::scale(local_matrix, transform.scale);
 
-        ImGuizmo::SetDrawlist(ImGui::GetWindowDrawList());
+            glm::mat4 handle_world_matrix = transform.world_transform;
 
-        Renderer::Renderer* _renderer = Core::Application::Get()->m_renderer.get();
+            ImGuizmo::SetDrawlist(ImGui::GetWindowDrawList());
 
-        ImGuizmo::SetRect(
-            Sandbox::viewport_position.x,
-            Sandbox::viewport_position.y,
-            _renderer->m_frame_buffer.width,
-            _renderer->m_frame_buffer.height
-        );
+            Renderer::Renderer* _renderer = Core::Application::Get()->m_renderer.get();
 
-        ImGuizmo::Manipulate(
-            glm::value_ptr(view), 
-            glm::value_ptr(projection), 
-            s_guizmo_operation,
-            s_guizmo_mode, 
-            glm::value_ptr(handle_world_matrix),
-            NULL,
-            s_snap ? 
-                s_guizmo_operation == ImGuizmo::TRANSLATE ?  &s_transform_snap[0] :
-                s_guizmo_operation == ImGuizmo::ROTATE ? &s_rotate_snap[0] :
-                s_guizmo_operation == ImGuizmo::SCALE ? &s_scale_snap[0]
-            : NULL : NULL
-        );
-
-        if (ImGuizmo::IsUsing())
-        {
-            glm::mat4 new_local_matrix = glm::inverse(parent_world) * handle_world_matrix;
-
-            glm::vec3 pos, rot_deg, scale;
-            ImGuizmo::DecomposeMatrixToComponents(
-                glm::value_ptr(new_local_matrix), 
-                glm::value_ptr(pos), 
-                glm::value_ptr(rot_deg), 
-                glm::value_ptr(scale)
+            ImGuizmo::SetRect(
+                Sandbox::viewport_position.x,
+                Sandbox::viewport_position.y,
+                _renderer->m_frame_buffer.width,
+                _renderer->m_frame_buffer.height
             );
 
-            Core::Transform& _transf = _level->GetComponent<Core::Transform>(focused_object.id);
+            ImGuizmo::Manipulate(
+                glm::value_ptr(view), 
+                glm::value_ptr(projection), 
+                s_guizmo_operation,
+                s_guizmo_mode, 
+                glm::value_ptr(handle_world_matrix),
+                NULL,
+                s_snap ? 
+                    s_guizmo_operation == ImGuizmo::TRANSLATE ?  &s_transform_snap[0] :
+                    s_guizmo_operation == ImGuizmo::ROTATE ? &s_rotate_snap[0] :
+                    s_guizmo_operation == ImGuizmo::SCALE ? &s_scale_snap[0]
+                : NULL : NULL
+            );
 
-            _transf.position = pos;
-            _transf.rotation = glm::quat(glm::radians(rot_deg));
-            _transf.scale = scale;
-            _transf.dirty = true;
+            if (ImGuizmo::IsUsing())
+            {
+                glm::mat4 new_local_matrix = glm::inverse(parent_world) * handle_world_matrix;
+
+                glm::vec3 pos, rot_deg, scale;
+                ImGuizmo::DecomposeMatrixToComponents(
+                    glm::value_ptr(new_local_matrix), 
+                    glm::value_ptr(pos), 
+                    glm::value_ptr(rot_deg), 
+                    glm::value_ptr(scale)
+                );
+
+                Core::Transform& _transf = _level->GetComponent<Core::Transform>(focused_object.id);
+
+                _transf.position = pos;
+                _transf.rotation = glm::quat(glm::radians(rot_deg));
+                _transf.scale = scale;
+                _transf.dirty = true;
+            }
         }
     }
 
