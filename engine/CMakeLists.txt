@@ -27,7 +27,6 @@ target_link_libraries(PruneauEngine
         stb
         assimp
         entt
-        cereal
         rapidjson
 )
 
