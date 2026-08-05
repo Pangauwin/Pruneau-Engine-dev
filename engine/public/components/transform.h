@@ -1,8 +1,5 @@
 #pragma once
 
-#include "cereal/archives/json.hpp"
-#include "cereal/cereal.hpp"
-#include <cereal/types/vector.hpp>
 #include "core/component/component.h"
 #include "core/component/component_system.h"
 #include "glm/ext/matrix_float4x4.hpp"
@@ -13,6 +10,8 @@
 #include <glm/gtc/quaternion.hpp>
 #include <vector>
 
+#include "rapidjson/document.h"
+#include "rapidjson/rapidjson.h"
 #include "serialization/types_serializer.h"
 
 namespace Core
@@ -45,25 +44,33 @@ public:
 	void Register() override {
 		ComponentRegistry::RegisterComponent<Transform>(
 			"Transform",
-			[] (SaveArchive& ar, const Transform& t)
+			[] (rapidjson::Value& _val, rapidjson::Document::AllocatorType& _al, const Transform& t)
 			{
-				ar(
-					cereal::make_nvp("Position", t.position),
-					cereal::make_nvp("Rotation", t.rotation),
-					cereal::make_nvp("Scale",    t.scale),
-					cereal::make_nvp("Parent",   t.parent),
-					cereal::make_nvp("Children", t.children)
-				);
+				rapidjson::Value position(rapidjson::kObjectType);
+				rapidjson::Value rotation(rapidjson::kObjectType);
+				rapidjson::Value scale(rapidjson::kObjectType);
+
+				save(position, _al, t.position);
+				save(rotation, _al, t.rotation);
+				save(scale, _al, t.scale);
+
+				_val.AddMember("Position", position, _al);
+				_val.AddMember("Rotation", rotation, _al);
+				_val.AddMember("Scale", scale, _al);
 			},
-			[] (LoadArchive& ar, Transform& t)
+			[] (const rapidjson::Value& _val, Transform& t)
 			{
-				ar(
-					cereal::make_nvp("Position", t.position),
-					cereal::make_nvp("Rotation", t.rotation),
-					cereal::make_nvp("Scale",    t.scale),
-					cereal::make_nvp("Parent",   t.parent),
-					cereal::make_nvp("Children", t.children)
-				);
+				if(!(_val.HasMember("Position") && 
+					_val.HasMember("Rotation") && 
+					_val.HasMember("Scale"))) return false;
+
+				if(!(_val["Position"].IsNumber() && 
+					_val["Rotation"].IsNumber() && 
+					_val["Scale"].IsNumber())) return false;
+
+				load(_val["Position"], t.position);
+				load(_val["Rotation"], t.rotation);
+				load(_val["Scale"], t.scale);
 
 				t.dirty = true;
 				t.world_transform = glm::mat4(1.f);
@@ -72,6 +79,8 @@ public:
 				t.forward = glm::vec3{};
 				t.up      = glm::vec3{};
 				t.right   = glm::vec3{};
+
+				return true;
 			}
 		);
 	}

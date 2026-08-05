@@ -48,7 +48,9 @@ void Core::Application::Init()
 	transform_system->Register();
 	transform_system->Connect();
 
-	(new CameraSystem())->Connect();
+	CameraSystem* camera_system = new CameraSystem();
+	camera_system->Connect();
+	camera_system->Register();
 
 	for(Layer* l: m_layer_stack)
 	{

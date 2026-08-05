@@ -6,13 +6,12 @@
 #include <unordered_map>
 
 #include <entt/entt.hpp>
-
-#include "cereal/archives/json.hpp"
 #include "core/log/log.h"
 #include "entt/core/fwd.hpp"
 #include "entt/entity/fwd.hpp"
 
-#include "level/level_parser.h"
+#include "rapidjson/document.h"
+#include "rapidjson/rapidjson.h"
 
 namespace Core {
 
@@ -26,8 +25,8 @@ struct ComponentInfo
 
     std::function<bool(entt::registry& _reg, entt::entity _ent)> Has;
 
-    std::function<void(SaveArchive&, entt::registry&, entt::entity)> Save;
-    std::function<void(LoadArchive&, entt::registry&, entt::entity)> Load;
+    std::function<void(rapidjson::Value&, rapidjson::Document::AllocatorType&, entt::registry&, entt::entity)> Save;
+    std::function<bool(const rapidjson::Value&, entt::registry&, entt::entity)> Load;
 };
 
 class ComponentRegistry
@@ -35,8 +34,8 @@ class ComponentRegistry
 public:
     template<typename T>
     static void RegisterComponent(const std::string& name, 
-        std::function<void(SaveArchive&, const T&)> _save,
-        std::function<void(LoadArchive&, T&)> _load)
+        std::function<void(rapidjson::Value&, rapidjson::Document::AllocatorType&, const T&)> _save,
+        std::function<bool(const rapidjson::Value&, T&)> _load)
     {
 
         if(HasComponent<T>())
@@ -60,14 +59,19 @@ public:
             return _reg.all_of<T>(_ent);
         };
 
-        info.Save = [_save](cereal::JSONOutputArchive& ar, entt::registry& _reg, entt::entity _ent)
+        info.Save = [_save](rapidjson::Value& _val, rapidjson::Document::AllocatorType& _al, entt::registry& _reg, entt::entity _ent)
         {
-            _save(ar, _reg.get<T>(_ent));
+            rapidjson::Value _comp(rapidjson::kObjectType);
+            _save(_comp, _al, _reg.get<T>(_ent));
+
+            std::string name = GetComponentInfo<T>()->name;
+
+            _val.AddMember(rapidjson::Value(name.c_str(), _al).Move(), _comp, _al);
         };
 
-        info.Load = [_load](cereal::JSONInputArchive& ar, entt::registry& _reg, entt::entity _ent)
+        info.Load = [_load](const rapidjson::Value& _val,  entt::registry& _reg, entt::entity _ent)
         {
-            _load(ar, _reg.emplace<T>(_ent));
+            return _load(_val, _reg.emplace_or_replace<T>(_ent));
         };
 
         auto id = entt::type_hash<T>::value();

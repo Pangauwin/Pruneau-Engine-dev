@@ -1,32 +1,55 @@
 #pragma once
 
-#include <cereal/cereal.hpp>
+#include <rapidjson/document.h>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 
-namespace glm
-{
+#pragma region GLM
 
-template<class Archive>
-void serialize(Archive& ar, vec3& v)
+inline void save(rapidjson::Value& out, rapidjson::Document::AllocatorType& alloc, const glm::vec3& v)
 {
-    ar(
-        cereal::make_nvp("x", v.x),
-        cereal::make_nvp("y", v.y),
-        cereal::make_nvp("z", v.z)
-    );
+    out.SetObject();
+    out.AddMember("x", v.x, alloc);
+    out.AddMember("y", v.y, alloc);
+    out.AddMember("z", v.z, alloc);
 }
 
-template<class Archive>
-void serialize(Archive& ar, quat& q)
+inline bool load(const rapidjson::Value& in, glm::vec3& out)
 {
-    ar(
-        cereal::make_nvp("w", q.w),
-        cereal::make_nvp("x", q.x),
-        cereal::make_nvp("y", q.y),
-        cereal::make_nvp("z", q.z)
-    );
+    if(!in.IsObject()) return false;
+    if(!(in.HasMember("x") && in.HasMember("y") && in.HasMember("z"))) return false;
+    if(!(in["x"].IsNumber() && in["y"].IsNumber() && in["z"].IsNumber())) return false;
+
+    out.x = in["x"].GetFloat();
+    out.y = in["y"].GetFloat();
+    out.z = in["z"].GetFloat();
+
+    return true;
 }
 
+inline void save(rapidjson::Value& out, rapidjson::Document::AllocatorType& alloc, const glm::quat& q)
+{
+    out.SetObject();
+    out.AddMember("x", q.x, alloc);
+    out.AddMember("y", q.y, alloc);
+    out.AddMember("z", q.z, alloc);
+    out.AddMember("w", q.w, alloc);
 }
+
+inline bool load(const rapidjson::Value& in, glm::quat& out)
+{
+    if(!in.IsObject()) return false;
+    if(!(in.HasMember("x") && in.HasMember("y") && in.HasMember("z") && in.HasMember("w"))) return false;
+    if(!(in["x"].IsNumber() && in["y"].IsNumber() && in["z"].IsNumber() && in["w"].IsNumber())) return false;
+
+    out.x = in["x"].GetFloat();
+    out.y = in["y"].GetFloat();
+    out.z = in["z"].GetFloat();
+    out.w = in["w"].GetFloat();
+
+    return true;
+}
+
+#pragma endregion
+

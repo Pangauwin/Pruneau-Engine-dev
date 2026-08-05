@@ -4,12 +4,9 @@
 #include <cstdint>
 #include <filesystem>
 
-#include <cereal/archives/json.hpp>
-
 namespace Core
 {
-using SaveArchive = cereal::JSONOutputArchive;
-using LoadArchive = cereal::JSONInputArchive;
+    
 using Entity = std::uint32_t;
 
 class LevelParser

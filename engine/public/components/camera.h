@@ -2,6 +2,8 @@
 
 #include "core/component/component.h"
 #include "core/component/component_system.h"
+#include "rapidjson/document.h"
+#include "rapidjson/rapidjson.h"
 
 #include <glm/glm.hpp>
 #include <glm/ext/matrix_clip_space.hpp>
@@ -104,13 +106,38 @@ public:
 	void Register() override {
 		ComponentRegistry::RegisterComponent<Camera>(
 			"Camera",
-			[] (SaveArchive& ar, const Camera& t)
+			[] (rapidjson::Value& _val, rapidjson::Document::AllocatorType& _al, const Camera& t)
 			{
-				// TODO: Implement
+				rapidjson::Value index;
+				index.SetInt(t.index);
+
+				_val.AddMember("index", index, _al);
+
+				rapidjson::Value config(rapidjson::kObjectType);
+				
+				if(t.config.type == CAMERA_TYPE_PERSPECTIVE)
+				{
+					CameraPerspectiveData* data = static_cast<CameraPerspectiveData*>(t.config.data);
+					config.AddMember("fov", data->fov, _al);
+					config.AddMember("far", data->far_plane, _al);
+					config.AddMember("near", data->near_plane, _al);
+				}
+
+				else
+				{
+					CameraOrthographicData* data = static_cast<CameraOrthographicData*>(t.config.data);
+
+					config.AddMember("bottom", data->bottom, _al);
+					config.AddMember("top", data->top, _al);
+					config.AddMember("left", data->left, _al);
+					config.AddMember("right", data->right, _al);
+				}
+
+				_val.AddMember("config", config, _al);
 			},
-			[] (LoadArchive& ar, Camera& t)
+			[] (const rapidjson::Value& _val, Camera& t)
 			{
-				// TODO: Implement
+				return false;
 			}
 		);
 	}

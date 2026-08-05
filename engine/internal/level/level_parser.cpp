@@ -1,21 +1,18 @@
 #include "level/level_parser.h"
-#include "cereal/external/rapidjson/document.h"
+#include "entt/entity/entity.hpp"
+#include <cstdio>
+
+#define RAPIDJSON_HAS_STDSTRING 1
+#include "rapidjson/document.h"
 #include "core/application.h"
 #include "core/component/component.h"
-#include "entt/entity/entity.hpp"
 #include "entt/entity/fwd.hpp"
 #include "level/level.h"
 #include "level/level_manager.h"
+#include "rapidjson/rapidjson.h"
+#include "rapidjson/filewritestream.h"
+#include "rapidjson/prettywriter.h"
 
-#include <cereal/cereal.hpp>
-#include <cereal/archives/binary.hpp>
-#include <cereal/archives/json.hpp>
-
-#include <cereal/types/vector.hpp>
-#include <cereal/types/string.hpp>
-#include <cstddef>
-#include <fstream>
-#include <iterator>
 #include <string>
 
 #include <entt/entt.hpp>
@@ -27,50 +24,66 @@ std::filesystem::path Core::LevelParser::SaveLevelData(Core::Level& data)
     Core::LogMessageInfo(std::string(level_data_file_location.c_str()) + "/" + data.name + ".plvl");
     std::filesystem::path _path = std::string(level_data_file_location.c_str()) + "/" + data.name + ".plvl";
 
-    std::ofstream file(_path);
-    Core::SaveArchive archive( file  );
+    std::FILE* file = fopen(_path.c_str(), "w");
 
     Core::Level* _lvl = Core::LevelManager::GetCurrentLevel();
     entt::registry& _reg = _lvl->GetRegistry();
     auto view = _reg.view<Entity_info>();
 
-    const std::size_t size = view.size();
+    rapidjson::Document doc;
+    doc.SetObject();
 
-    archive(cereal::make_nvp("Name", _lvl->name));
-    archive(cereal::make_nvp("Camera Index", _lvl->camera_index));
+    rapidjson::Value level(rapidjson::kObjectType);
 
-    archive(cereal::make_nvp("Entities", cereal::make_size_tag(size)));
+    level.AddMember("Name", _lvl->name, doc.GetAllocator());
+    level.AddMember("camera_index", _lvl->camera_index, doc.GetAllocator());
 
-    for(auto& _ent : view)
+    rapidjson::Value entities(rapidjson::kObjectType);
+
+    for(auto& _ent: view)
     {
-        archive.startNode();
+        rapidjson::Value ent(rapidjson::kObjectType);
 
-        archive(cereal::make_nvp("ID", entt::to_integral(_ent)));
+        ent.AddMember("Id", entt::to_integral(_ent), doc.GetAllocator());
+        
+        Parent& _parent = _lvl->GetComponent<Parent>(_ent);
+        Entity_info& _info = _lvl->GetComponent<Entity_info>(_ent);
+        
+        ent.AddMember("parent", _parent.entity, doc.GetAllocator());
+        ent.AddMember("name", _info.name, doc.GetAllocator());
 
-        Entity_info& info = _lvl->GetComponent<Entity_info>(_ent);
-        archive(cereal::make_nvp("Name", info.name));
-
-        archive.setNextName("Components");
-        archive.startNode();
-
+        rapidjson::Value parsed_comp(rapidjson::kObjectType);
         for(const auto& [id, component]: ComponentRegistry::m_component_registry)
         {
             if(!component.Has(_reg, _ent)) continue;
             
-            archive.setNextName(component.name.c_str());
-            archive.startNode();
-        
-            component.Save(archive, _reg, _ent);
-
-            archive.finishNode();
+            component.Save(parsed_comp, doc.GetAllocator(), _reg, _ent);
         }
 
-        archive.finishNode();
+        ent.AddMember("Components", parsed_comp, doc.GetAllocator());
 
-        archive.finishNode();
+        std::string id_str = std::to_string(entt::to_integral(_ent));
+
+        rapidjson::Value key_value(id_str.c_str(), doc.GetAllocator());
+
+        entities.AddMember(key_value, ent, doc.GetAllocator());
     }
 
-    return _path;
+    level.AddMember("Entities", entities, doc.GetAllocator());
+
+    doc.AddMember("level", level, doc.GetAllocator());
+
+    char buffer[65536];
+    rapidjson::FileWriteStream os(file, buffer, sizeof(buffer));
+    rapidjson::PrettyWriter<rapidjson::FileWriteStream> writer(os);
+
+    writer.SetIndent('\t', 1);
+
+    doc.Accept(writer);
+
+    fclose(file);
+
+    return level_data_file_location;
 }
 
 
@@ -81,24 +94,7 @@ void Core::LevelParser::SetLevelDataFileLocation(std::filesystem::path _path)
 
 Core::Level* Core::LevelParser::LoadLevelData(std::filesystem::path _path)
 {
-    std::ifstream input_file(_path);
-
-
-    std::string json ((std::istreambuf_iterator<char>(input_file)), std::istreambuf_iterator<char>());
-
-    rapidjson::Document doc;
-
-    doc.Parse(json.c_str());
-
-    if(doc.HasParseError())
-    {
-        Core::LogMessageError("Failed to load level: JSON parse error");
-        return nullptr;
-    }
-
-    Core::Level* new_level = new Level(doc.HasMember("Name") && doc["Name"].IsString() ? doc["Name"].GetString() : "Anonyme level");
-
-    return new_level;
+    return new Core::Level("");
 }
 
 
@@ -107,5 +103,5 @@ struct SavedEntity
     std::string name = "";
     std::uint32_t id = 0;
 
-    
+
 };
