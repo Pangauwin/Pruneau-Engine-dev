@@ -40,7 +40,9 @@ SandboxLayer::SandboxLayer() : Core::Layer("SandboxLayer") {
 
 void SandboxLayer::OnAttach() {
     // Component declaration
-    (new Sandbox::SceneCameraSystem())->Connect();
+    SceneCameraSystem* scene_camera_system = new Sandbox::SceneCameraSystem();
+    scene_camera_system->Connect();
+    scene_camera_system->Register();
 
     Sandbox::ImGuiManager::Init();
 

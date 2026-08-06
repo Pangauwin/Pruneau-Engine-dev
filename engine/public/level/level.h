@@ -4,7 +4,6 @@
 
 #include "core/log/log.h"
 #include "entt/entity/fwd.hpp"
-#include "entt/signal/fwd.hpp"
 
 #include <entt/entt.hpp>
 #include <vector>
@@ -101,6 +100,8 @@ private:
     void HandleEntityDestruction();
 
     entt::registry m_registry;
+
+    //TODO: Create a std::unordered_map<Entity, entt::entity> guid_to_entity which contains the corresponding GUID with the Entity assigned
 
 public:
     unsigned int camera_index = 0;
