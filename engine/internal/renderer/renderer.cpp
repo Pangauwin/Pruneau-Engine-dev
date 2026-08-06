@@ -41,8 +41,9 @@ static GLuint screen_vao = 0;
 static GLuint screen_vbo = 0;
 static GLuint screen_program = 0;
 
-Renderer::Renderer::Renderer(Platform::Window* _window) : 
-	m_window(_window), m_frame_buffer(Framebuffer(_window->params.width, _window->params.height))
+Renderer::Renderer::Renderer(Platform::Window* _window, RendererConfig _config) : 
+	m_window(_window), m_frame_buffer(Framebuffer(_window->params.width, _window->params.height)),
+    m_config(_config)
 {
 	_current_renderer = this;
 
@@ -177,7 +178,23 @@ void Renderer::Renderer::PostRender()
 
 	m_frame_buffer.UnBind();
 
-    //TODO: Write an actual target for the renderer to know where to render (texture ? screen ?)
+    if(m_config._target == RenderTarget::RENDER_TARGET_SCREEN)
+    {
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        glUseProgram(screen_program);
+        glBindVertexArray(screen_vao);
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, m_frame_buffer.GetColorAttachmentRendererID());
+        glUniform1i(glGetUniformLocation(screen_program, "screenTexture"), 0);
+
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+
+        glBindVertexArray(0);
+    }
+
 }
 
 void Renderer::Renderer::PreGUIRender()

@@ -18,8 +18,15 @@ namespace Renderer {
 
 class Skybox;
 
-struct RendererConfig {
+enum class RenderTarget{
+	RENDER_TARGET_TEXTURE,
+	RENDER_TARGET_SCREEN
+};
 
+struct RendererConfig {
+	RenderTarget _target = RenderTarget::RENDER_TARGET_SCREEN;
+	unsigned int width = 1920;
+	unsigned int height = 1080;
 };
 
 class Renderer
@@ -31,7 +38,7 @@ friend class Core::ModelRenderer;
 friend class Core::Camera;
 
 public:
-	Renderer(Platform::Window* _window);
+	Renderer(Platform::Window* _window, RendererConfig _config={});
 	~Renderer();
 
 	static Renderer* Get();
@@ -46,6 +53,8 @@ private:
 public:
 	Framebuffer m_frame_buffer;
 	Skybox* m_skybox;
+
+	RendererConfig m_config;
 
 private:
 	Platform::Window* m_window;

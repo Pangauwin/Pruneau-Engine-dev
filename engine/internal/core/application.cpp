@@ -25,7 +25,7 @@ static Core::Application* current_application;
 
 Core::Application::Application(AppParams _params) : 
 	m_window(std::make_unique<Platform::Window>(_params.window_params)), 
-	m_renderer(std::make_unique<Renderer::Renderer>(m_window.get())),
+	m_renderer(std::make_unique<Renderer::Renderer>(m_window.get(), _params.renderer_config)),
 	m_app_should_close(false)
 {
 	current_application = this;

@@ -27,6 +27,7 @@ void Core::CameraSystem::OnUpdate()
                     Core::LogMessageError("Camera Error: could not find camera data!");
                     return;
                 }
+
                 _cam.projection = glm::perspective(glm::radians(data->fov), data->aspect, data->near_plane, data->far_plane);
             }
 

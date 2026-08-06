@@ -1,7 +1,5 @@
 #include "sandbox_layer.h"
 
-#include <string>
-
 #include "asset/asset.h"
 #include "asset/asset_manager.h"
 #include "components/camera.h"

@@ -11,7 +11,8 @@
 namespace Core {
 
 struct AppParams {
-	Platform::WindowParams window_params;
+	Platform::WindowParams window_params = {};
+	Renderer::RendererConfig renderer_config = {};
 };
 
 void LogMessage(std::string _message);
