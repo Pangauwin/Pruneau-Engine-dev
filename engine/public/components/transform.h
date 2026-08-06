@@ -64,10 +64,6 @@ public:
 					_val.HasMember("Rotation") && 
 					_val.HasMember("Scale"))) return false;
 
-				if(!(_val["Position"].IsNumber() && 
-					_val["Rotation"].IsNumber() && 
-					_val["Scale"].IsNumber())) return false;
-
 				load(_val["Position"], t.position);
 				load(_val["Rotation"], t.rotation);
 				load(_val["Scale"], t.scale);

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "core/application.h"
 #include "core/component/component.h"
 #include "core/component/component_system.h"
 #include "rapidjson/document.h"
@@ -117,6 +118,7 @@ public:
 				
 				if(t.config.type == CAMERA_TYPE_PERSPECTIVE)
 				{
+					config.AddMember("type", "perspective", _al);
 					CameraPerspectiveData* data = static_cast<CameraPerspectiveData*>(t.config.data);
 					config.AddMember("fov", data->fov, _al);
 					config.AddMember("far", data->far_plane, _al);
@@ -125,6 +127,7 @@ public:
 
 				else
 				{
+					config.AddMember("type", "orthographic", _al);
 					CameraOrthographicData* data = static_cast<CameraOrthographicData*>(t.config.data);
 
 					config.AddMember("bottom", data->bottom, _al);
@@ -137,7 +140,45 @@ public:
 			},
 			[] (const rapidjson::Value& _val, Camera& t)
 			{
-				return false;
+				if(!_val.HasMember("config"))
+				{
+					Core::LogMessageError("Unable to load camera ! No Camera data !");
+					return false;
+				}
+				else {
+					if(std::string(_val["config"]["type"].GetString()) == "perspective")
+					{
+						t.config.type = CAMERA_TYPE_PERSPECTIVE;
+						t.config.data = new CameraPerspectiveData();
+						CameraPerspectiveData* data = static_cast<CameraPerspectiveData*>(t.config.data);
+						data->fov = _val["config"]["fov"].GetFloat();
+						data->near_plane = _val["config"]["near"].GetFloat();
+						data->far_plane = _val["config"]["far"].GetFloat();
+					}
+					else {
+						t.config.type = CAMERA_TYPE_ORTHOGRAPHIC;
+						t.config.data = new CameraOrthographicData();
+						CameraOrthographicData* data = static_cast<CameraOrthographicData*>(t.config.data);
+						data->bottom = _val["config"]["bottom"].GetFloat();
+						data->top = _val["config"]["top"].GetFloat();
+						data->left = _val["config"]["left"].GetFloat();
+						data->right = _val["config"]["right"].GetFloat();
+					}
+
+				}
+
+				if(!_val.HasMember("index"))
+				{
+					Core::LogMessageWarning("No camera index affected to camera, defaulting to 1"); // TODO: default the value to the one given by the level itself
+					t.index = 1;
+				}
+				else {
+					t.index = _val["index"].GetInt();
+				}
+
+				t.dirty = true;
+
+				return true;
 			}
 		);
 	}

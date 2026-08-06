@@ -1,6 +1,9 @@
 #include "level/level_parser.h"
+#include "entt/core/fwd.hpp"
 #include "entt/entity/entity.hpp"
 #include <cstdio>
+#include <fstream>
+#include <iterator>
 
 #define RAPIDJSON_HAS_STDSTRING 1
 #include "rapidjson/document.h"
@@ -94,14 +97,81 @@ void Core::LevelParser::SetLevelDataFileLocation(std::filesystem::path _path)
 
 Core::Level* Core::LevelParser::LoadLevelData(std::filesystem::path _path)
 {
-    return new Core::Level("");
+    std::ifstream file(_path);
+
+    std::string json((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+
+    rapidjson::Document doc;
+
+    doc.Parse(json.c_str());
+
+    if(doc.HasParseError())
+    {
+        Core::LogMessageError("Unable to load level: save file has parse errors!");
+        return nullptr;
+    }
+
+    if(!doc.HasMember("level"))
+    {
+        Core::LogMessageError("Unable to load level: save file does not contain any level data!");
+        return nullptr;
+    }
+
+    std::string level_name = "Anonyme Level";
+    unsigned int camera_index = 0;
+
+    rapidjson::Value& j_lvl = doc["level"];
+
+    if(!j_lvl.HasMember("Name"))
+    {
+        Core::LogMessageWarning("Saved Level had no name! Naming this level as \"Anonyme Level\"");
+    }
+    else {
+        level_name = j_lvl["Name"].GetString();
+    }
+
+    if(!j_lvl.HasMember("camera_index"))
+    {
+        Core::LogMessageWarning("Saved Level had no camera_index! Defaulting camera_index to 0");
+    }
+    else {
+        camera_index = j_lvl["camera_index"].GetUint();
+    }
+
+    Core::Level* _new_lvl = new Level(level_name.c_str());
+    _new_lvl->camera_index = camera_index;
+
+    if(!j_lvl.HasMember("Entities"))
+    {
+        Core::LogMessageError("Unable to load level! No entities found!");
+    }
+    else 
+    {
+        rapidjson::Value& entities = j_lvl["Entities"];
+        
+        for(rapidjson::Value::ConstMemberIterator itr = entities.MemberBegin();
+            itr != entities.MemberEnd(); ++itr)
+        {
+            Entity new_entity = _new_lvl->CreateEntity(itr->value["name"].GetString());
+            _new_lvl->SetParent(new_entity, itr->value["parent"].GetUint());
+
+            for(rapidjson::Value::ConstMemberIterator j_comp = itr->value["Components"].MemberBegin();
+                j_comp != itr->value["Components"].MemberEnd(); ++j_comp)
+            {
+                if(!ComponentRegistry::HasComponentName(j_comp->name.GetString()))
+                {
+                    Core::LogMessageError("Failed adding component " + std::string(j_comp->name.GetString()) + ": No such component found in component registry!");
+                    continue;
+                }
+
+                entt::id_type comp = ComponentRegistry::m_name_to_id[j_comp->name.GetString()];
+                if(!ComponentRegistry::m_component_registry[comp].Load(j_comp->value, _new_lvl->GetRegistry(), static_cast<entt::entity>(new_entity)))
+                {
+                    Core::LogMessageError("Failed to load component " + std::string(j_comp->name.GetString()) + "!");
+                } 
+            }
+        }
+    }
+
+    return _new_lvl;
 }
-
-
-struct SavedEntity
-{
-    std::string name = "";
-    std::uint32_t id = 0;
-
-
-};

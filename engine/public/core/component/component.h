@@ -8,6 +8,7 @@
 #include <entt/entt.hpp>
 #include "core/log/log.h"
 #include "entt/core/fwd.hpp"
+#include "entt/core/type_info.hpp"
 #include "entt/entity/fwd.hpp"
 
 #include "rapidjson/document.h"
@@ -77,6 +78,7 @@ public:
         auto id = entt::type_hash<T>::value();
 
         m_component_registry.emplace(entt::type_hash<T>::value(), std::move(info));
+        m_name_to_id.emplace(name, entt::type_hash<T>::value());
     }
 
     template<typename T>
@@ -97,7 +99,7 @@ public:
         return m_name_to_id.contains(_name);
     }
 
-    static std::unordered_map<entt::id_type, ComponentInfo> m_component_registry;
+    static std::unordered_map<entt::id_type, ComponentInfo> m_component_registry; //Change this to directly string, ComponentInfo instead of having two unordered maps
     static std::unordered_map<std::string, entt::id_type> m_name_to_id;
 };
 }
