@@ -14,6 +14,7 @@
 #include "core/application.h"
 #include "renderer/renderer.h"
 #include "renderer/skybox.h"
+#include "renderer/texture.h"
 
 #include "ui/imgui_manager.h"
 #include "ui/windows/debug_window.h"
@@ -21,6 +22,7 @@
 #include "ui/windows/properties_window.h"
 #include "ui/windows/viewport.h"
 #include "ui/windows/main_bar.h"
+#include "ui/windows/asset_explorer.h"
 
 #include <glad/glad.h>
 
@@ -31,6 +33,7 @@ namespace Sandbox {
 
 Core::AssetID model_id = 0;
 FocusObject focused_object = {.type=FocusType::None, .id=0};
+IconSet icons = {};
 
 SandboxLayer::SandboxLayer() : Core::Layer("SandboxLayer") {
 
@@ -43,6 +46,13 @@ void SandboxLayer::OnAttach() {
     scene_camera_system->Register();
 
     Sandbox::ImGuiManager::Init();
+
+    // Asset import
+    Core::AssetID file_icon = Core::AssetManager::ImportAsset("ressources/icons/file.png");
+    Core::AssetID folder_icon = Core::AssetManager::ImportAsset("ressources/icons/folder.png");
+
+    icons.file_icon = Core::AssetManager::GetAsset<Core::TextureAsset>(file_icon)->GetTexture()->GetID();
+    icons.folder_icon = Core::AssetManager::GetAsset<Core::TextureAsset>(folder_icon)->GetTexture()->GetID();
 
     //Level Creation
     Core::Level* lvl = new Core::Level("my-level");
@@ -77,6 +87,7 @@ void SandboxLayer::OnGUIRender()
     Sandbox::DrawLevelEditorWindow();
     Sandbox::DrawViewport();
     Sandbox::DrawPropertiesWindow();
+    Sandbox::DrawAssetExplorer();
 
     Sandbox::ImGuiManager::EndFrame();
 }

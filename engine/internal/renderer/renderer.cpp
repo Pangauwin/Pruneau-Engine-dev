@@ -188,7 +188,7 @@ void Renderer::Renderer::PostRender()
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, m_frame_buffer.GetColorAttachmentRendererID());
-        glUniform1i(glGetUniformLocation(screen_program, "screenTexture"), 0);
+        glUniform1i(glGetUniformLocation(screen_program, "screenTexture"), 0); //TODO: Instead of glGetUniformLocation each frame, store the location in a static variable that we can reuse later
 
         glDrawArrays(GL_TRIANGLES, 0, 6);
 

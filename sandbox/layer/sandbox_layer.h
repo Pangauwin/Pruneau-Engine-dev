@@ -2,7 +2,8 @@
 
 #include "asset/asset.h"
 #include "core/layer.h"
-#include <variant>
+
+#include <imgui.h>
 
 namespace Core
 {
@@ -26,7 +27,8 @@ public:
 enum class FocusType{
     None,
     Entity,
-    Asset
+    Asset,
+    Folder
 };
 
 struct FocusObject {
@@ -34,6 +36,12 @@ struct FocusObject {
     std::uint32_t id = 0;
 };
 
+struct IconSet{
+    ImTextureID folder_icon = 0;
+    ImTextureID file_icon = 0;
+};
+
 extern Core::AssetID model_id;
 extern FocusObject focused_object;
+extern IconSet icons;
 }
