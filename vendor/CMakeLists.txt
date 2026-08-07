@@ -56,3 +56,14 @@ target_include_directories(entt INTERFACE entt/src)
 # RapidJSON
 add_library(rapidjson INTERFACE)
 target_include_directories(rapidjson INTERFACE rapidjson/include)
+
+#ImGuiFileDialog
+add_library(ImGuiFileDialog STATIC
+    ImGuiFileDialog/ImGuiFileDialog.cpp
+)
+
+target_include_directories(ImGuiFileDialog PUBLIC
+    ImGuiFileDialog
+)
+
+target_link_libraries(ImGuiFileDialog PUBLIC imgui)

@@ -16,6 +16,7 @@ First of all, I want to thanks all the developers of the librairies used in this
  - [Assimp](https://github.com/assimp/assimp)
  - [EnTT](https://github.com/skypjack/entt)
  - [RapidJSON](https://github.com/Tencent/rapidjson)
+ - [ImGuiFileDialog](https://github.com/aiekick/ImGuiFileDialog)
 
  Credits to [enemymouse](https://github.com/enemymouse) for the gui graphics style
 
