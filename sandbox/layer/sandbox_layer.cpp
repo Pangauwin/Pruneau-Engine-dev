@@ -45,6 +45,8 @@ void SandboxLayer::OnAttach() {
     scene_camera_system->Connect();
     scene_camera_system->Register();
 
+    Sandbox::RegisterEngineComponentsDrawFunctions();
+
     Sandbox::ImGuiManager::Init();
 
     // Asset import
