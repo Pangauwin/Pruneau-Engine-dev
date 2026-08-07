@@ -41,6 +41,7 @@ private:
 	void UpdateMatrix(Core::Transform& _transform);
 
 public:
+// TODO: Move the override functions in a separate cpp file, and maybe call them via a singleton on construction
 	void Register() override {
 		ComponentRegistry::RegisterComponent<Transform>(
 			"Transform",
