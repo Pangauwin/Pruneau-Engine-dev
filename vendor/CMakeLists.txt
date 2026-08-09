@@ -57,7 +57,7 @@ target_include_directories(entt INTERFACE entt/src)
 add_library(rapidjson INTERFACE)
 target_include_directories(rapidjson INTERFACE rapidjson/include)
 
-#ImGuiFileDialog
+# ImGuiFileDialog
 add_library(ImGuiFileDialog STATIC
     ImGuiFileDialog/ImGuiFileDialog.cpp
 )
@@ -65,5 +65,11 @@ add_library(ImGuiFileDialog STATIC
 target_include_directories(ImGuiFileDialog PUBLIC
     ImGuiFileDialog
 )
-
 target_link_libraries(ImGuiFileDialog PUBLIC imgui)
+
+# Jolt Physics
+set(JPH_BUILD_SAMPLES OFF CACHE BOOL "" FORCE)
+set(JPH_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(JPH_BUILD_VIEWER OFF CACHE BOOL "" FORCE)
+
+add_subdirectory(jolt/Build)

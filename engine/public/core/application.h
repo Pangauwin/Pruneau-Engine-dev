@@ -8,6 +8,8 @@
 #include "../renderer/renderer.h"
 #include "layer_stack.h"
 
+#include "physics/physics_engine.h"
+
 namespace Core {
 
 struct AppParams {
@@ -45,6 +47,8 @@ private:
 public:
 	std::unique_ptr<Platform::Window> m_window;
 	std::unique_ptr<Renderer::Renderer> m_renderer;
+
+	std::unique_ptr<Physics::PhysicsEngine> m_physics_engine;
 
 private:
 	bool m_app_should_close;

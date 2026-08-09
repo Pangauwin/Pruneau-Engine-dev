@@ -17,7 +17,7 @@ target_include_directories(Sandbox
     PRIVATE ${CMAKE_SOURCE_DIR}/sandbox
 )
 
-target_link_libraries(PruneauEngine
+target_link_libraries(Sandbox
     PUBLIC
         glm
         imgui

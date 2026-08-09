@@ -28,6 +28,7 @@ target_link_libraries(PruneauEngine
         assimp
         entt
         rapidjson
+        Jolt
 )
 
 if (UNIX)

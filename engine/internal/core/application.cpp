@@ -2,6 +2,7 @@
 
 #include <memory>
 
+#include "physics/physics_engine.h"
 #include "platform/window.h"
 
 #include "level/level_manager.h"
@@ -26,7 +27,7 @@ static Core::Application* current_application;
 Core::Application::Application(AppParams _params) : 
 	m_window(std::make_unique<Platform::Window>(_params.window_params)), 
 	m_renderer(std::make_unique<Renderer::Renderer>(m_window.get(), _params.renderer_config)),
-	m_app_should_close(false)
+	m_app_should_close(false), m_physics_engine(std::make_unique<Physics::PhysicsEngine>())
 {
 	current_application = this;
 }
@@ -56,6 +57,8 @@ void Core::Application::Init()
 	{
 		l->OnAttach();
 	}
+
+	m_physics_engine->Init();
 }
 
 void Core::Application::Run()
@@ -80,6 +83,8 @@ void Core::Application::Run()
 
 		LevelManager::OnLateUpdate(dt);
 
+		m_physics_engine->Update(dt);
+
 		m_renderer->PreRender();
 
 		LevelManager::OnRender();
@@ -102,6 +107,7 @@ void Core::Application::Run()
 		m_renderer->PostGUIRender();
 	}
 
+	m_physics_engine->Shutdown();
 	OnClose();
 }
 
