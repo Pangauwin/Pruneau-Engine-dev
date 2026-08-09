@@ -2,7 +2,7 @@
 
 #include <memory>
 
-#include "physics/physics_engine.h"
+#include "physics/physics_world.h"
 #include "platform/window.h"
 
 #include "level/level_manager.h"
@@ -27,7 +27,7 @@ static Core::Application* current_application;
 Core::Application::Application(AppParams _params) : 
 	m_window(std::make_unique<Platform::Window>(_params.window_params)), 
 	m_renderer(std::make_unique<Renderer::Renderer>(m_window.get(), _params.renderer_config)),
-	m_app_should_close(false), m_physics_engine(std::make_unique<Physics::PhysicsEngine>())
+	m_app_should_close(false), m_physics_engine(std::make_unique<Physics::PhysicsWorld>())
 {
 	current_application = this;
 }

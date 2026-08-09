@@ -8,7 +8,7 @@
 #include "../renderer/renderer.h"
 #include "layer_stack.h"
 
-#include "physics/physics_engine.h"
+#include "physics/physics_world.h"
 
 namespace Core {
 
@@ -48,7 +48,7 @@ public:
 	std::unique_ptr<Platform::Window> m_window;
 	std::unique_ptr<Renderer::Renderer> m_renderer;
 
-	std::unique_ptr<Physics::PhysicsEngine> m_physics_engine;
+	std::unique_ptr<Physics::PhysicsWorld> m_physics_engine;
 
 private:
 	bool m_app_should_close;
