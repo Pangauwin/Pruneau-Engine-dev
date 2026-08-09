@@ -26,3 +26,6 @@
 [submodule "vendor/ImGuiFileDialog"]
 	path = vendor/ImGuiFileDialog
 	url = https://github.com/aiekick/ImGuiFileDialog
+[submodule "vendor/jolt"]
+	path = vendor/jolt
+	url = https://github.com/jrouwe/JoltPhysics.git
