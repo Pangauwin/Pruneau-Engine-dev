@@ -41,38 +41,15 @@ Assets used in this scene : [PSX style office pack](https://valsekamerplant.itch
 
 ### Prerequisites
 
-- C++20 compatible compiler (compiled on clang, other compilers might need adaptations)
+- Clang with compatibility with C++20
 - [CMake](https://cmake.org/) (>=3.16)
 - [OpenGL](https://www.opengl.org/) (>=4.6)
 - Git (clone the repo and the submodules)
+- Vulkan
 
 ### Build Instructions
 
-#### WARNING #1 : This projects only builds on Linux.
-#### WARNING #2 : This is NOT a stable version, the project is still in development, expect crashes/non working features
-#### WARNING #3 : This project only works with clang, I don't ensure it to work with other compilers
-
-1. Clone the repository:
-    ```bash
-    git clone https://github.com/Pangauwin/Pruneau-Renderer.git --recurse-submodules
-    cd Pruneau-Renderer
-    ```
-
-2. Create a build directory:
-    ```bash
-    mkdir build
-    cd build
-    ```
-
-3. Generate the project using CMake:
-    ```bash
-    cmake ..
-    ```
-
-4. Build the project:
-    ```bash
-    cmake --build .
-    ```
+For the moment, I am focusing on making it work with my machine. Theoretically, a simple cmake command could be enough to make the program run on your machine, but I doubt that in practice this works.
 
 ## Prebuilt binairies
 Prebuilt binairies will arrive as soon as the first version (even if unstable) is released. As explained, it will first come on Windows and then on Linux.
