@@ -2,6 +2,7 @@
 
 #include <memory>
 
+#include "components/rigidbody.h"
 #include "physics/physics_world.h"
 #include "platform/window.h"
 
@@ -23,6 +24,9 @@ static float dt = 0.00001f; // Avoid 0 divisions errors
 
 static Core::Application* current_application;
 
+static float accumulator = 0.0f;
+constexpr float FIXED_DT = 1.0f / 60.0f; // 60Hz physics update
+constexpr float MAX_ACCUMULATED = 0.25f;
 
 Core::Application::Application(AppParams _params) : 
 	m_window(std::make_unique<Platform::Window>(_params.window_params)), 
@@ -45,13 +49,16 @@ void Core::Application::Init()
 	LevelManager::Init();
 
 	TransformSystem* transform_system = new TransformSystem(); // TODO : Make this in a proper scope, destroy them at the end
-
 	transform_system->Register();
 	transform_system->Connect();
 
 	CameraSystem* camera_system = new CameraSystem();
 	camera_system->Connect();
 	camera_system->Register();
+
+	RigidBodySystem* rigidbody_system = new RigidBodySystem();
+	rigidbody_system->Connect();
+	rigidbody_system->Register();
 
 	for(Layer* l: m_layer_stack)
 	{
@@ -68,6 +75,9 @@ void Core::Application::Run()
 	while (!m_app_should_close)
 	{
 		Time::Update();
+
+		accumulator += Time::delta_time;
+
 		Input::UpdateMousePosition();
 		Input::UpdateMouseDelta();
 
@@ -81,9 +91,18 @@ void Core::Application::Run()
 
 		LevelManager::OnUpdate(dt);
 
-		LevelManager::OnLateUpdate(dt);
+		if(accumulator > MAX_ACCUMULATED)
+		{
+			accumulator = MAX_ACCUMULATED;
+		}
 
-		m_physics_engine->Update(dt);
+		while(accumulator >= FIXED_DT)
+		{
+			m_physics_engine->Update(FIXED_DT);
+			accumulator -= FIXED_DT;
+		}
+
+		LevelManager::OnLateUpdate(dt);
 
 		m_renderer->PreRender();
 
