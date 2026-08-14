@@ -71,3 +71,8 @@ void Core::RigidBodySystem::OnUpdate()
         _rb.dirty = false;
     }
 }
+
+void Core::RigidBodySystem::OnLateUpdate()
+{
+    SyncTransform();
+}

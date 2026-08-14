@@ -51,6 +51,7 @@ private:
 
 protected:
     void OnUpdate() override;
+    void OnLateUpdate() override;
 };
 
 }
