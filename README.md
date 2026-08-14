@@ -51,10 +51,6 @@ Assets used in this scene : [PSX style office pack](https://valsekamerplant.itch
 
 For the moment, I am focusing on making it work with my machine. Theoretically, a simple cmake command could be enough to make the program run on your machine, but I doubt that in practice this works.
 
-## Prebuilt binairies
-Prebuilt binairies will arrive as soon as the first version (even if unstable) is released. As explained, it will first come on Windows and then on Linux.
-There will be one binary for each major version release.
-
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
