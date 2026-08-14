@@ -8,18 +8,28 @@
 #include <Jolt/Physics/Body/BodyID.h>
 #include <Jolt/Physics/Collision/CollideShape.h>
 #include <Jolt/Physics/Body/MotionType.h>
-
+#include <Jolt/Physics/Collision/Shape/BoxShape.h>
+#include <Jolt/Math/Vec3.h>
+#include <Jolt/Physics/Collision/ObjectLayer.h>
+#include <Jolt/Math/Real.h>
+#include <Jolt/Physics/Body/BodyCreationSettings.h>
+#include <memory>
 
 namespace Core {
 
 struct Rigidbody : public Component
 {
-    JPH::CollideShapeResult shape; // TODO: find a way to serialize this (register again)
+    // TODO: find a way to serialize this (register again)
     JPH::EMotionType motion_type = JPH::EMotionType::Dynamic;
+    JPH::BoxShapeSettings shape_settings = JPH::BoxShapeSettings(JPH::RVec3(1.0f, 1.0f, 1.0f));
+    JPH::ObjectLayer _layer = 1;
     float mass = 1.0f;
 
     JPH::BodyID _body; //runtime values
+    JPH::CollideShapeResult shape;
+    std::unique_ptr<JPH::BodyCreationSettings> body_settings;
     bool simulating = false;
+    bool dirty = true;
 };
 
 class RigidBodySystem : public ComponentSystem
@@ -36,8 +46,11 @@ public:
             });
     }
 
+private:
+    void SyncTransform();
+
 protected:
-    
+    void OnUpdate() override;
 };
 
 }

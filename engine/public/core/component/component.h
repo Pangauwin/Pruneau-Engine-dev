@@ -28,6 +28,7 @@ struct ComponentInfo
 
     std::function<void(rapidjson::Value&, rapidjson::Document::AllocatorType&, entt::registry&, entt::entity)> Save;
     std::function<bool(const rapidjson::Value&, entt::registry&, entt::entity)> Load;
+    std::function<void(entt::registry&, entt::entity)> Add;
 };
 
 class ComponentRegistry
@@ -73,6 +74,11 @@ public:
         info.Load = [_load](const rapidjson::Value& _val,  entt::registry& _reg, entt::entity _ent)
         {
             return _load(_val, _reg.emplace_or_replace<T>(_ent));
+        };
+
+        info.Add = [] (entt::registry& _reg, entt::entity _ent)
+        {
+            _reg.emplace_or_replace<T>(_ent);
         };
 
         auto id = entt::type_hash<T>::value();

@@ -3,8 +3,10 @@
 #include <functional>
 #include <imgui.h>
 #include "components/model_renderer.h"
+#include "components/rigidbody.h"
 #include "components/transform.h"
 #include "components/camera.h"
+#include "core/component/component.h"
 #include "entt/entity/fwd.hpp"
 #include "glm/fwd.hpp"
 #include "glm/gtc/quaternion.hpp"
@@ -34,6 +36,25 @@ void Sandbox::DrawPropertiesWindow()
         {
             draw_function(_level->GetRegistry(), static_cast<entt::entity>(focused_object.id));
         }
+
+        if(ImGui::Button("Add Component"))
+        {
+            ImGui::OpenPopup("component_add_popup");
+        }
+
+        if(ImGui::BeginPopup("component_add_popup"))
+        {
+            for(auto& [id, comp] : Core::ComponentRegistry::m_component_registry)
+            {
+                if(ImGui::Button(comp.name.c_str()))
+                {
+                    comp.Add(_level->GetRegistry(), static_cast<entt::entity>(focused_object.id));
+                }
+            }
+
+            ImGui::EndPopup();
+        }
+
     }
     else if (focused_object.type == FocusType::Asset) {
         // TODO: Implement
@@ -167,4 +188,8 @@ void Sandbox::RegisterEngineComponentsDrawFunctions()
         ImGui::InputInt("Model ID", (int*)&_t.model_id);
     });
     
+    RegisterDrawFunctionComponent<Core::Rigidbody>("RigidBody",
+        [] (Core::Rigidbody& _rb) {
+            ImGui::Text("RigidBody ID: %d", _rb._body.GetIndex());
+        });
 }
