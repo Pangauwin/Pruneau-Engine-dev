@@ -103,7 +103,7 @@ void Core::RigidBodySystem::OnSimulationBegin(const Physics::OnSimulationBegin& 
         }
         else {
             Physics::PhysicsWorld::Get()->GetBodyInterface().SetPositionAndRotation(_rb._body, position, rotation, JPH::EActivation::Activate);
-            Physics::PhysicsWorld::Get()->GetBodyInterface().AddBody(_rb._body, JPH::EActivation::Activate);
+            //Physics::PhysicsWorld::Get()->GetBodyInterface().AddBody(_rb._body, JPH::EActivation::Activate);
         }
     }
 
@@ -142,7 +142,7 @@ void Core::RigidBodySystem::OnSimulationEnd(const Physics::OnSimulationEnd& _eve
     {
         JPH::BodyInterface& _body_interface = Physics::PhysicsWorld::Get()->GetBodyInterface();
         _body_interface.RemoveBody(_rb._body);
-        //_body_interface.DestroyBody(_rb._body); TODO: Fix this bug (why can't I destroy this body => error)
+        _body_interface.DestroyBody(_rb._body); //TODO: Fix this bug (why can't I destroy this body => error)
     }
 
     Core::Transform& _tr = _reg.get<Core::Transform>(_event._ent);
