@@ -14,8 +14,13 @@
 #include "layer/sandbox_layer.h"
 
 #include "level/level.h"
+#include "level/level_events.h"
 #include "level/level_manager.h"
+#include "physics/physics_events.h"
 #include <entt/entt.hpp>
+
+#include <Jolt/Jolt.h>
+#include <Jolt/Physics/Body/MotionType.h>
 
 std::vector<std::function<void(entt::registry& _reg, entt::entity _ent)>> Sandbox::draw_functions;
 
@@ -69,7 +74,7 @@ void Sandbox::DrawPropertiesWindow()
 void Sandbox::RegisterEngineComponentsDrawFunctions()
 {
     RegisterDrawFunctionComponent<Core::Transform>("Transform", 
-        [](Core::Transform& _t) {
+        [](entt::entity _ent, Core::Transform& _t) {
 
             float pos[3] = {_t.position.x, _t.position.y, _t.position.z};
 
@@ -118,7 +123,7 @@ void Sandbox::RegisterEngineComponentsDrawFunctions()
         });
 
     RegisterDrawFunctionComponent<Core::Camera>("Camera", 
-        [](Core::Camera& _t) {
+        [](entt::entity _ent, Core::Camera& _t) {
             ImGui::DragInt("Camera index", (int*)&_t.index);
 
             static const char* camera_modes[] = {
@@ -183,13 +188,51 @@ void Sandbox::RegisterEngineComponentsDrawFunctions()
         });
     
     RegisterDrawFunctionComponent<Core::ModelRenderer>("Model Renderer", 
-        [](Core::ModelRenderer& _t)
+        [](entt::entity _ent, Core::ModelRenderer& _t)
     {
         ImGui::InputInt("Model ID", (int*)&_t.model_id);
     });
     
     RegisterDrawFunctionComponent<Core::Rigidbody>("RigidBody",
-        [] (Core::Rigidbody& _rb) {
-            ImGui::Text("RigidBody ID: %d", _rb._body.GetIndex());
-        });
+        [] (entt::entity _ent, Core::Rigidbody& _rb) {
+        ImGui::Text("RigidBody ID: %d", _rb._body.GetIndex());
+        
+        static const char* motion_types[2] = {"DYNAMIC_BODY", "STATIC_BODY"};
+        const char* current_motion_type = _rb.motion_type == JPH::EMotionType::Dynamic ? motion_types[0] : motion_types[1];
+
+        const char* previous_motion_type = current_motion_type;
+
+        if(ImGui::BeginCombo("Motion type", current_motion_type))
+            {
+                for(int n = 0; n < IM_ARRAYSIZE(motion_types); ++n)
+                {
+                    bool is_selected = std::string(motion_types[n]) == current_motion_type;
+                    if (ImGui::Selectable(motion_types[n], is_selected))
+                        current_motion_type = motion_types[n];
+                    if (is_selected)
+                        ImGui::SetItemDefaultFocus();
+                }
+                ImGui::EndCombo();
+            }
+
+            if(current_motion_type != previous_motion_type)
+            {
+                if(current_motion_type == motion_types[0])
+                {
+                    _rb.motion_type = JPH::EMotionType::Dynamic;
+                }
+                else {
+                    _rb.motion_type = JPH::EMotionType::Static;
+                }
+            }
+
+        if(ImGui::Button("Start Simulation"))
+        {
+            Core::_dispatcher.trigger(Physics::OnSimulationBegin{._ent=_ent});
+        }
+        if(ImGui::Button("Stop Simulation"))
+        {
+            Core::_dispatcher.trigger(Physics::OnSimulationEnd{._ent=_ent});
+        }
+    });
 }

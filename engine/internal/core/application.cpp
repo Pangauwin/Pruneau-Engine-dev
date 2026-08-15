@@ -58,6 +58,7 @@ void Core::Application::Init()
 
 	RigidBodySystem* rigidbody_system = new RigidBodySystem();
 	rigidbody_system->Connect();
+	rigidbody_system->ConnectPhysicsEvents();
 	rigidbody_system->Register();
 
 	for(Layer* l: m_layer_stack)

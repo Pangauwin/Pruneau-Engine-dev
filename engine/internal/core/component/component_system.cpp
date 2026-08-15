@@ -1,10 +1,11 @@
 #include "core/component/component_system.h"
 
+#include "entt/signal/fwd.hpp"
 #include "level/level_events.h"
 
 void Core::ComponentSystem::Connect()
 {
-    auto& dispatcher = Core::_dispatcher;
+    entt::dispatcher& dispatcher = Core::_dispatcher;
 
     dispatcher.sink<Core::OnAwake>().connect<&ComponentSystem::HandleAwake>(*this);
     dispatcher.sink<Core::OnStart>().connect<&ComponentSystem::HandleStart>(*this);

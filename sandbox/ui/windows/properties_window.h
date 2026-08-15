@@ -14,7 +14,7 @@ namespace Sandbox
     extern std::vector<std::function<void(entt::registry& _reg, entt::entity _ent)>> draw_functions;;
 
     template<typename T>
-    void RegisterDrawFunctionComponent(std::string name, std::function<void(T& comp)> _draw)
+    void RegisterDrawFunctionComponent(std::string name, std::function<void(entt::entity, T& comp)> _draw)
     {
         std::function<void(entt::registry& _reg, entt::entity _ent)> draw_function = [_draw, name] (entt::registry& _reg, entt::entity _ent)
         {
@@ -24,7 +24,7 @@ namespace Sandbox
 
                 if(ImGui::CollapsingHeader(name.c_str(), ImGuiTreeNodeFlags_DefaultOpen))
                 {
-                    _draw(_comp);
+                    _draw(_ent, _comp);
                 }
             }
         };

@@ -2,6 +2,10 @@
 
 #include "core/component/component.h"
 #include "core/component/component_system.h"
+#include "glm/ext/vector_float3.hpp"
+#include "glm/fwd.hpp"
+#include "glm/gtc/quaternion.hpp"
+#include "physics/physics_events.h"
 #include "rapidjson/document.h"
 
 #include <Jolt/Jolt.h>
@@ -13,6 +17,7 @@
 #include <Jolt/Physics/Collision/ObjectLayer.h>
 #include <Jolt/Math/Real.h>
 #include <Jolt/Physics/Body/BodyCreationSettings.h>
+
 #include <memory>
 
 namespace Core {
@@ -30,11 +35,16 @@ struct Rigidbody : public Component
     std::unique_ptr<JPH::BodyCreationSettings> body_settings;
     bool simulating = false;
     bool dirty = true;
+
+    glm::vec3 starting_position = glm::vec3();
+    glm::quat starting_rotation = glm::quat(0.0f, 0.0f, 0.0f, 1.0f);
 };
 
 class RigidBodySystem : public ComponentSystem
 {
 public:
+    void ConnectPhysicsEvents();
+
     void Register() override {
         ComponentRegistry::RegisterComponent<Rigidbody>(
             "RigidBody", 
@@ -52,6 +62,9 @@ private:
 protected:
     void OnUpdate() override;
     void OnLateUpdate() override;
+
+    void OnSimulationBegin(const Physics::OnSimulationBegin& _event);
+    void OnSimulationEnd(const Physics::OnSimulationEnd& _event);
 };
 
 }

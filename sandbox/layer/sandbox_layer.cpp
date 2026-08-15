@@ -19,6 +19,7 @@
 #include "ui/imgui_manager.h"
 #include "ui/windows/debug_window.h"
 #include "ui/windows/level_editor.h"
+#include "ui/windows/physics_window.h"
 #include "ui/windows/properties_window.h"
 #include "ui/windows/viewport.h"
 #include "ui/windows/main_bar.h"
@@ -90,6 +91,7 @@ void SandboxLayer::OnGUIRender()
     Sandbox::DrawViewport();
     Sandbox::DrawPropertiesWindow();
     Sandbox::DrawAssetExplorer();
+    Sandbox::DrawPhysicsWindow();
 
     Sandbox::ImGuiManager::EndFrame();
 }
