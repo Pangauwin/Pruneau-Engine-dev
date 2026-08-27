@@ -113,6 +113,8 @@ public:
 
 	const Renderer::Mesh* GetMesh() const { return m_mesh.get(); }
 
+	void DrawWireframe(const glm::mat4& _projection, const glm::mat4& _view, const glm::mat4& _mesh);
+
 private:
 	std::unique_ptr<Renderer::Mesh> m_mesh;
 };

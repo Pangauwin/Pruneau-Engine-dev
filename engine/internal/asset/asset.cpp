@@ -23,7 +23,7 @@ Core::AssetGUID Core::GenerateGUID()
 #include "renderer/mesh.h"
 
 Core::MeshAsset::MeshAsset(std::string _name, AssetID _id, const std::vector<Renderer::Vertex>& vertices, const std::vector<unsigned int>& indices) 
-	: Asset(std::move(_name), _id) 
+	: Asset(_name, _id) 
 {
 	m_mesh = std::make_unique<Renderer::Mesh>(vertices, indices);
 }
@@ -97,6 +97,19 @@ void Core::ModelAsset::ModelAsset::Draw(const glm::mat4& _projection, const glm:
 		glActiveTexture(GL_TEXTURE0);
 	}
 
+}
+
+void Core::MeshAsset::DrawWireframe(const glm::mat4& _projection, const glm::mat4& _view, const glm::mat4& _mesh)
+{
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+	Core::AssetManager::collider_material->Bind();
+
+	glBindVertexArray(GetMesh()->VAO);
+	glDrawElements(GL_TRIANGLES, GetMesh()->m_indices.size(), GL_UNSIGNED_INT, 0);
+	glBindVertexArray(0);
+
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
 namespace Core {

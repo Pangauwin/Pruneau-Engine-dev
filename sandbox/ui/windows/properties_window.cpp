@@ -2,6 +2,7 @@
 
 #include <functional>
 #include <imgui.h>
+#include "components/mesh_collider.h"
 #include "components/model_renderer.h"
 #include "components/rigidbody.h"
 #include "components/transform.h"
@@ -191,6 +192,40 @@ void Sandbox::RegisterEngineComponentsDrawFunctions()
         [](entt::entity _ent, Core::ModelRenderer& _t)
     {
         ImGui::InputInt("Model ID", (int*)&_t.model_id);
+    });
+
+    RegisterDrawFunctionComponent<Core::MeshCollider>("Mesh Collider", 
+    [] (entt::entity _ent, Core::MeshCollider& _col) {
+        ImGui::InputInt("Mesh ID", (int*)&_col.mesh_asset_id);
+
+        static const char* motion_types[2] = {"CONCAVE", "CONVEX"};
+        const char* current_motion_type = _col.shape_type == Core::ColliderShapeType::ConcaveMesh ? motion_types[0] : motion_types[1];
+
+        const char* previous_motion_type = current_motion_type;
+
+        if(ImGui::BeginCombo("Shape type", current_motion_type))
+            {
+                for(int n = 0; n < IM_ARRAYSIZE(motion_types); ++n)
+                {
+                    bool is_selected = std::string(motion_types[n]) == current_motion_type;
+                    if (ImGui::Selectable(motion_types[n], is_selected))
+                        current_motion_type = motion_types[n];
+                    if (is_selected)
+                        ImGui::SetItemDefaultFocus();
+                }
+                ImGui::EndCombo();
+            }
+
+            if(current_motion_type != previous_motion_type)
+            {
+                if(current_motion_type == motion_types[0])
+                {
+                    _col.shape_type = Core::ColliderShapeType::ConcaveMesh;
+                }
+                else {
+                    _col.shape_type = Core::ColliderShapeType::ConvexMesh;
+                }
+            }
     });
     
     RegisterDrawFunctionComponent<Core::Rigidbody>("RigidBody",

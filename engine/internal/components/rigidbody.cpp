@@ -1,16 +1,23 @@
 #include "components/rigidbody.h"
+#include "Jolt/Core/Reference.h"
 #include "Jolt/Math/Quat.h"
 #include "Jolt/Math/Real.h"
+#include "Jolt/Physics/Body/Body.h"
 #include "Jolt/Physics/Body/BodyCreationSettings.h"
 #include "Jolt/Physics/Body/BodyInterface.h"
 #include "Jolt/Physics/Body/MotionType.h"
 #include "Jolt/Physics/EActivation.h"
+#include "asset/asset.h"
+#include "asset/asset_manager.h"
+#include "components/camera.h"
+#include "components/mesh_collider.h"
 #include "components/transform.h"
 #include "core/application.h"
 #include "entt/entity/fwd.hpp"
 #include "entt/signal/fwd.hpp"
 #include "level/level_events.h"
 #include "level/level_manager.h"
+#include "physics/mesh_shape_cache.h"
 #include "physics/physics_events.h"
 #include "physics/physics_layers.h"
 #include "physics/physics_world.h"
@@ -54,17 +61,42 @@ void Core::RigidBodySystem::OnUpdate()
 
         if(!_rb.dirty) continue;
 
-        _rb.dirty = false; // TODO: instead of rebuilding the physics body for every change, better architecture would be:
-        /*
-        * - Have two dirty flags, one related to body properties, the other one to the simulation
-        * - Rebuild the physics body on simulation launch
-        */
-    }
+        _rb.dirty = false;
+    } // TODO: remove
 }
 
 void Core::RigidBodySystem::OnLateUpdate()
 {
     SyncTransform();
+}
+
+void Core::RigidBodySystem::OnRender()
+{
+    entt::registry& _reg = Core::LevelManager::GetCurrentLevel()->GetRegistry();
+
+    for(auto _ent : _reg.view<Core::Rigidbody, Core::Transform, Core::MeshCollider>())
+    {
+        Core::Rigidbody& _rb = _reg.get<Core::Rigidbody>(_ent);
+        Core::MeshCollider& _col = _reg.get<Core::MeshCollider>(_ent);
+        Core::Transform& _transf = _reg.get<Core::Transform>(_ent);
+        
+        std::shared_ptr<MeshAsset> _mesh = AssetManager::GetAsset<MeshAsset>(_col.mesh_asset_id);
+        if(_mesh)
+        {
+            for(auto _cam_ent: _reg.view<Core::Camera, Core::Transform>())
+            {
+                if(!(_reg.get<Core::Camera>(_cam_ent).index == Core::LevelManager::GetCurrentLevel()->camera_index))
+                    continue;
+
+                Core::Camera& _cam = _reg.get<Core::Camera>(_cam_ent);
+                Core::Transform& _cam_transform = _reg.get<Core::Transform>(_cam_ent);
+
+                _mesh->DrawWireframe(_cam.projection, 
+                    glm::inverse(_cam_transform.world_transform), 
+                    _transf.world_transform);
+            }
+        }
+    }
 }
 
 void Core::RigidBodySystem::ConnectPhysicsEvents()
@@ -87,6 +119,22 @@ void Core::RigidBodySystem::OnSimulationBegin(const Physics::OnSimulationBegin& 
 
     JPH::RVec3 position(_tr.position.x, _tr.position.y, _tr.position.z);
     JPH::Quat rotation(_tr.rotation.x, _tr.rotation.y, _tr.rotation.z, _tr.rotation.w);
+
+    JPH::RefConst<JPH::Shape> shape;
+
+    if(MeshCollider* _mesh_collider = _reg.try_get<Core::MeshCollider>(_event._ent))
+    {
+        if(_mesh_collider->shape_type == Core::ColliderShapeType::ConcaveMesh && 
+            _rb.motion_type == JPH::EMotionType::Dynamic)
+        {
+            Core::LogMessageWarning("Forced dynamic concave object to static mode");
+            _rb.motion_type = JPH::EMotionType::Static;
+        }
+        shape = Physics::MeshShapeCache::GetOrBuild(_mesh_collider->mesh_asset_id, _mesh_collider->shape_type);
+    }
+    else {
+        shape = _rb.shape_settings.Create().Get();
+    }
 
     _rb.body_settings = std::make_unique<JPH::BodyCreationSettings>(_rb.shape_settings.Create().Get(), 
         position, 
@@ -143,6 +191,7 @@ void Core::RigidBodySystem::OnSimulationEnd(const Physics::OnSimulationEnd& _eve
         JPH::BodyInterface& _body_interface = Physics::PhysicsWorld::Get()->GetBodyInterface();
         _body_interface.RemoveBody(_rb._body);
         _body_interface.DestroyBody(_rb._body); //TODO: Fix this bug (why can't I destroy this body => error)
+        _rb._body = JPH::BodyID(); // Put body invalid again
     }
 
     Core::Transform& _tr = _reg.get<Core::Transform>(_event._ent);

@@ -62,6 +62,7 @@ private:
 protected:
     void OnUpdate() override;
     void OnLateUpdate() override;
+    void OnRender() override;
 
     void OnSimulationBegin(const Physics::OnSimulationBegin& _event);
     void OnSimulationEnd(const Physics::OnSimulationEnd& _event);
