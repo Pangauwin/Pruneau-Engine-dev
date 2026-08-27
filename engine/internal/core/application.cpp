@@ -2,6 +2,7 @@
 
 #include <memory>
 
+#include "components/mesh_collider.h"
 #include "components/rigidbody.h"
 #include "physics/physics_world.h"
 #include "platform/window.h"
@@ -38,7 +39,8 @@ Core::Application::Application(AppParams _params) :
 
 Core::Application::~Application()
 {
-
+	if(current_application == this)
+		current_application = nullptr;
 }
 
 void Core::Application::Init()
@@ -60,6 +62,9 @@ void Core::Application::Init()
 	rigidbody_system->Connect();
 	rigidbody_system->ConnectPhysicsEvents();
 	rigidbody_system->Register();
+
+	MeshColliderSystem* mesh_collider_system = new MeshColliderSystem();
+	mesh_collider_system->Register();
 
 	for(Layer* l: m_layer_stack)
 	{
