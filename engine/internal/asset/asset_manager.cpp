@@ -35,8 +35,10 @@ namespace Core {
 
 std::shared_ptr<Core::ShaderAsset> Core::AssetManager::default_shader;
 std::shared_ptr<Core::ShaderAsset> Core::AssetManager::error_shader;
+std::shared_ptr<Core::ShaderAsset> Core::AssetManager::collider_shader;
 std::shared_ptr<Core::MaterialAsset> Core::AssetManager::default_material;
 std::shared_ptr<Core::MaterialAsset> Core::AssetManager::error_material;
+std::shared_ptr<Core::MaterialAsset> Core::AssetManager::collider_material;
 
 struct ParsedMesh {
 	std::vector<Renderer::Vertex> vertices;
@@ -73,6 +75,7 @@ void Core::AssetManager::Init()
 	// Import default assets
 	AssetManager::SetDefaultShader("ressources/shaders/default.vert");
 	AssetManager::SetErrorShader("ressources/shaders/error.vert");
+	AssetManager::SetColliderShader("ressources/shaders/collider.vert");
 }
 
 Core::AssetID Core::AssetManager::ImportAsset(const std::string& path, FolderID _folder)
@@ -81,7 +84,7 @@ Core::AssetID Core::AssetManager::ImportAsset(const std::string& path, FolderID 
 
 	if (EndsWith(path, ".obj") || EndsWith(path, ".gltf") || EndsWith(path, ".glb") || EndsWith(path, ".fbx"))
 	{
-		id = ImportModel(path);
+		id = ImportModel(path, _folder);
 	}
 
 	else if (EndsWith(path, ".png") || EndsWith(path, ".jpg") || EndsWith(path, ".bmp"))
@@ -187,7 +190,25 @@ void Core::AssetManager::SetErrorShader(const char* _path)
 	}
 }
 
-Core::AssetID Core::AssetManager::ImportModel(const std::string& _path)
+void Core::AssetManager::SetColliderShader(const char* _path)
+{
+	AssetID collider_shader_ID = ImportAsset(_path);
+	collider_shader = GetAsset<ShaderAsset>(collider_shader_ID);
+	if (!collider_material.get())
+	{
+		s_next_asset_id++;
+		collider_material = std::make_shared<MaterialAsset>("Collider Material", s_next_asset_id, collider_shader);
+		m_assets[s_next_asset_id] = collider_material;
+		AssignAssetToFolder(s_next_asset_id, 0);
+	}
+	else
+	{
+		AssetID collider_material_ID = collider_material->GetID();
+		collider_material = std::make_shared<MaterialAsset>("Collider Material", collider_material_ID, collider_shader);
+	}
+}
+
+Core::AssetID Core::AssetManager::ImportModel(const std::string& _path, FolderID _folder)
 {
 	Assimp::Importer importer;
 
@@ -208,7 +229,7 @@ Core::AssetID Core::AssetManager::ImportModel(const std::string& _path)
 	ParseMaterials(scene, parsed_model);
 	ParseNode(scene->mRootNode, scene, glm::mat4(1.0f), parsed_model);
 
-	return BuildModelAsset(parsed_model);
+	return BuildModelAsset(parsed_model, _folder);
 
 	//TODO : apply the right shader to the meshes
 }
@@ -306,7 +327,7 @@ static ParsedMesh ParseMesh(aiMesh* _mesh)
 	return parsed_mesh;
 }
 
-Core::AssetID Core::AssetManager::BuildModelAsset(const ParsedModel& parsed)
+Core::AssetID Core::AssetManager::BuildModelAsset(const ParsedModel& parsed, FolderID _folder)
 {
 	std::vector<ModelReadyMeshData> _model_mesh_data;
 
@@ -322,6 +343,8 @@ Core::AssetID Core::AssetManager::BuildModelAsset(const ParsedModel& parsed)
 		);
 
 		m_assets[s_next_asset_id] = mesh_asset;
+
+		AssignAssetToFolder(s_next_asset_id, _folder);
 
 		ModelReadyMeshData _data = {
 			.meshID = s_next_asset_id,

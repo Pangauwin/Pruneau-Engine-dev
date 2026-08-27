@@ -30,7 +30,6 @@ class AssetManager
 	friend class Asset;
 
 public:
-
 	static void Init();
 
 #pragma region Folders
@@ -58,9 +57,12 @@ public:
 
 	static std::shared_ptr<ShaderAsset> error_shader;
 	static std::shared_ptr<ShaderAsset> default_shader;
+	static std::shared_ptr<ShaderAsset> collider_shader;
 
 	static std::shared_ptr<MaterialAsset> default_material;
 	static std::shared_ptr<MaterialAsset> error_material;
+	static std::shared_ptr<MaterialAsset> collider_material;
+
 #pragma endregion
 
 #pragma region MaterialCreation
@@ -73,11 +75,12 @@ private:
 
 	static void SetDefaultShader(const char* _path);
 	static void SetErrorShader(const char* _path);
+	static void SetColliderShader(const char* _path);
 
 #pragma region ModelLoading
-	static AssetID ImportModel(const std::string& _path);
+	static AssetID ImportModel(const std::string& _path, FolderID _folder);
 
-	static Core::AssetID BuildModelAsset(const ParsedModel& parsed);
+	static Core::AssetID BuildModelAsset(const ParsedModel& parsed, FolderID _folder);
 #pragma endregion
 
 #pragma region TextureLoading
