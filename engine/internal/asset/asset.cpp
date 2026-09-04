@@ -5,6 +5,9 @@
 #include <random>
 #include <memory>
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
 #include "asset/asset_manager.h"
 
 #include <glad/glad.h>
@@ -104,6 +107,10 @@ void Core::MeshAsset::DrawWireframe(const glm::mat4& _projection, const glm::mat
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	Core::AssetManager::collider_material->Bind();
+
+	Core::AssetManager::collider_material->GetShaderAsset()->GetShader()->SetMat4("view", _view);
+	Core::AssetManager::collider_material->GetShaderAsset()->GetShader()->SetMat4("model", glm::scale(_mesh, glm::vec3(100.f, 100.f, 100.f))); // TODO: this is a temporary fix to the scaling issue of the mesh importer. I should fix that
+	Core::AssetManager::collider_material->GetShaderAsset()->GetShader()->SetMat4("perspective", _projection);
 
 	glBindVertexArray(GetMesh()->VAO);
 	glDrawElements(GL_TRIANGLES, GetMesh()->m_indices.size(), GL_UNSIGNED_INT, 0);

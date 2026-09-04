@@ -136,7 +136,7 @@ void Core::RigidBodySystem::OnSimulationBegin(const Physics::OnSimulationBegin& 
         shape = _rb.shape_settings.Create().Get();
     }
 
-    _rb.body_settings = std::make_unique<JPH::BodyCreationSettings>(_rb.shape_settings.Create().Get(), 
+    _rb.body_settings = std::make_unique<JPH::BodyCreationSettings>(shape, 
         position, 
         rotation, 
         _rb.motion_type,

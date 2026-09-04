@@ -1,6 +1,7 @@
 #include "renderer/frame_buffer.h"
 
 #include <glad/glad.h>
+#include <string>
 
 #include "core/application.h"
 
@@ -18,7 +19,11 @@ Renderer::Framebuffer::~Framebuffer()
 
 void Renderer::Framebuffer::Bind()
 {
-    glGetError(); // Clear error because it can interfere with the gl_error inside the fb
+    gl_error = glGetError(); // Clear error because it can interfere with the gl_error inside the fb
+    if(gl_error != 0)
+    {
+        Core::LogMessageError("Pre Framebuffer GL Error: " + std::to_string(gl_error));
+    }
     glBindFramebuffer(GL_FRAMEBUFFER, m_renderer_id);
     glViewport(0, 0, width, height);
 }
@@ -28,6 +33,11 @@ void Renderer::Framebuffer::UnBind()
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     gl_error = glGetError();
+
+    if(gl_error != 0)
+    {
+        Core::LogMessageError("Post Framebuffer GL Error: " + std::to_string(gl_error));
+    }
 
     glViewport(0, 0, Core::Application::Get()->m_window->params.width, Core::Application::Get()->m_window->params.height);
 }

@@ -180,6 +180,8 @@ void Renderer::Renderer::PostRender()
 
     if(m_config._target == RenderTarget::RENDER_TARGET_SCREEN)
     {
+        glDisable(GL_DEPTH_TEST);
+
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glClear(GL_COLOR_BUFFER_BIT);
 
@@ -193,6 +195,8 @@ void Renderer::Renderer::PostRender()
         glDrawArrays(GL_TRIANGLES, 0, 6);
 
         glBindVertexArray(0);
+
+        glEnable(GL_DEPTH_TEST);
     }
 
 }

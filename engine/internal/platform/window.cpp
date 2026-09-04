@@ -163,7 +163,6 @@ Platform::Window::Window(WindowParams& _params) : params(_params), m_glfw_window
 
 Platform::Window::~Window()
 {
-	window_close_callback(m_glfw_window);
 	glfwTerminate();
 }
 

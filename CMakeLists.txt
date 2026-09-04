@@ -11,7 +11,8 @@ endif()
 add_subdirectory(vendor)
 add_subdirectory(engine)
 #add_subdirectory(editor)
-add_subdirectory(sandbox)
+#add_subdirectory(sandbox)
+add_subdirectory(plane-sim)
 
 file(COPY ${CMAKE_SOURCE_DIR}/ressources DESTINATION ${CMAKE_BINARY_DIR})
 
