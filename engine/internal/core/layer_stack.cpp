@@ -4,7 +4,6 @@ Core::LayerStack::~LayerStack()
 {
 	for (Layer* _layer : m_layers)
 	{
-		_layer->OnDetach();
 		delete _layer;
 	}
 }

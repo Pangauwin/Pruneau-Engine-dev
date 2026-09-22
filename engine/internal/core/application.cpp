@@ -39,6 +39,8 @@ Core::Application::Application(AppParams _params) :
 
 Core::Application::~Application()
 {
+	if(!m_app_should_close)
+		Core::LogMessageWarning("Brutal shutdown ! Maybe some layers didn't unload correctly !");
 	if(current_application == this)
 		current_application = nullptr;
 }
