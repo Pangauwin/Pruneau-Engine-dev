@@ -106,6 +106,8 @@ void Core::Application::Run()
 
 		while(accumulator >= FIXED_DT)
 		{
+			for(Layer* _layer : m_layer_stack)
+				_layer->OnPhysicsUpdate();
 			m_physics_engine->Update(FIXED_DT);
 			accumulator -= FIXED_DT;
 		}
