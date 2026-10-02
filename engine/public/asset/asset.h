@@ -123,7 +123,6 @@ struct ModelReadyMeshData
 {
 	AssetID meshID;
 	AssetID materialID;
-	glm::mat4 mesh_transform = glm::mat4(1.0f);	
 };
 
 class ModelAsset : public Asset

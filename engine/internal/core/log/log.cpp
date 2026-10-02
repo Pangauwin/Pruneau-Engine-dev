@@ -11,9 +11,7 @@
 
 namespace Core 
 {
-
-// TODO: Colorize console Outputs
-
+    
 void LogMessage(std::string _message)
 {
     time_t timestamp = time(NULL);

@@ -73,14 +73,13 @@ void Core::ModelAsset::ModelAsset::Draw(const glm::mat4& _projection, const glm:
 	{
 		std::shared_ptr<Core::MaterialAsset> _mat = Core::AssetManager::GetAsset<Core::MaterialAsset>(mesh.materialID);
 		std::shared_ptr<Core::MeshAsset> _mesh = Core::AssetManager::GetAsset<Core::MeshAsset>(mesh.meshID);
-		glm::mat4 transform = mesh.mesh_transform;
 		
 		if (_mat)
 		{
 			_mat->Bind();
 			
 			_mat->GetShaderAsset()->GetShader()->SetMat4("view", _view);
-			_mat->GetShaderAsset()->GetShader()->SetMat4("model", _model * transform);
+			_mat->GetShaderAsset()->GetShader()->SetMat4("model", _model);
 			_mat->GetShaderAsset()->GetShader()->SetMat4("perspective", _projection);
 		}
 
@@ -89,7 +88,7 @@ void Core::ModelAsset::ModelAsset::Draw(const glm::mat4& _projection, const glm:
 			Core::AssetManager::error_material->Bind();
 
 			Core::AssetManager::error_material->GetShaderAsset()->GetShader()->SetMat4("view", _view);
-			Core::AssetManager::error_material->GetShaderAsset()->GetShader()->SetMat4("model", _model * transform);
+			Core::AssetManager::error_material->GetShaderAsset()->GetShader()->SetMat4("model", _model);
 			Core::AssetManager::error_material->GetShaderAsset()->GetShader()->SetMat4("perspective", _projection);
 		}
 

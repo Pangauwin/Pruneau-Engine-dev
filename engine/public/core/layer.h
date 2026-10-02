@@ -17,6 +17,7 @@ public:
 	virtual void OnEvent(Event& _event) {}
 
 	virtual void OnUpdate(float dt) {}
+	virtual void OnPhysicsUpdate() {}
 	virtual void OnRender() {}
 	virtual void OnGUIRender() {}
 	virtual void PostGUIRender() {}

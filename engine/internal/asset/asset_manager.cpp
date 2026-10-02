@@ -46,7 +46,6 @@ struct ParsedMesh {
 	std::vector<Renderer::Vertex> vertices;
 	std::vector<uint32_t> indices;
 	int materialIndex = 0;
-	glm::mat4 transform = glm::mat4(1.0f);
 };
 
 struct ParsedMaterial
@@ -275,8 +274,6 @@ static void ParseNode(aiNode* node, const aiScene* scene, const glm::mat4& _pare
 			v.normal = glm::normalize(normal_matrix * v.normal);
 		}
 
-		parsed_mesh.transform = glm::mat4(1.0f); //TODO: API change because this is no longer needed as it is identity
-
 		_model.meshes.push_back(parsed_mesh);
 	}
 
@@ -360,7 +357,6 @@ Core::AssetID Core::AssetManager::BuildModelAsset(const ParsedModel& parsed, Fol
 		ModelReadyMeshData _data = {
 			.meshID = s_next_asset_id,
 			.materialID = default_material->GetID(),
-			.mesh_transform = mesh.transform
 		};
 
 		_model_mesh_data.push_back(_data);
