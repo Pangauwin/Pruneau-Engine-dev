@@ -36,6 +36,7 @@ struct Rigidbody : public Component
     bool simulating = false;
     bool dirty = true;
 
+
     glm::vec3 starting_position = glm::vec3();
     glm::quat starting_rotation = glm::quat(0.0f, 0.0f, 0.0f, 1.0f);
 };
@@ -66,6 +67,7 @@ protected:
 
     void OnSimulationBegin(const Physics::OnSimulationBegin& _event);
     void OnSimulationEnd(const Physics::OnSimulationEnd& _event);
+    void AddForce(const Physics::AddForce& _data);
 };
 
 }

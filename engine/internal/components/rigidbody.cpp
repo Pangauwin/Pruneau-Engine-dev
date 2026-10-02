@@ -2,6 +2,7 @@
 #include "Jolt/Core/Reference.h"
 #include "Jolt/Math/Quat.h"
 #include "Jolt/Math/Real.h"
+#include "Jolt/Math/Vec3.h"
 #include "Jolt/Physics/Body/Body.h"
 #include "Jolt/Physics/Body/BodyCreationSettings.h"
 #include "Jolt/Physics/Body/BodyInterface.h"
@@ -16,6 +17,7 @@
 #include "core/application.h"
 #include "entt/entity/fwd.hpp"
 #include "entt/signal/fwd.hpp"
+#include "glm/ext/vector_float3.hpp"
 #include "level/level_events.h"
 #include "level/level_manager.h"
 #include "physics/mesh_shape_cache.h"
@@ -106,6 +108,7 @@ void Core::RigidBodySystem::ConnectPhysicsEvents()
 
     _dispatcher.sink<Physics::OnSimulationBegin>().connect<&Core::RigidBodySystem::OnSimulationBegin>(*this);
     _dispatcher.sink<Physics::OnSimulationEnd>().connect<&Core::RigidBodySystem::OnSimulationEnd>(*this);
+    _dispatcher.sink<Physics::AddForce>().connect<&Core::RigidBodySystem::AddForce>(*this);
 }
 
 void Core::RigidBodySystem::OnSimulationBegin(const Physics::OnSimulationBegin& _event)
@@ -206,4 +209,17 @@ void Core::RigidBodySystem::OnSimulationEnd(const Physics::OnSimulationEnd& _eve
     _tr.rotation = _rb.starting_rotation;
 
     _rb.simulating = false;
+}
+
+void Core::RigidBodySystem::AddForce(const Physics::AddForce& _data)
+{
+    glm::vec3 _force = _data._force;
+    Core::Rigidbody& _rb = Core::LevelManager::GetCurrentLevel()->GetRegistry().get<Core::Rigidbody>(_data._ent);
+
+    JPH::BodyInterface& _body_interface = Physics::PhysicsWorld::Get()->GetBodyInterface();
+    _body_interface.AddForce(_rb._body, JPH::Vec3(_force.x, _force.y, _force.z), JPH::EActivation::Activate);
+
+    JPH::Vec3 velocity = _body_interface.GetLinearVelocity(_rb._body);
+
+    Core::LogMessage("Body velocity: (X: " + std::to_string(velocity.GetX()) + ", Y: " + std::to_string(velocity.GetY()) + + ", Z: " + std::to_string(velocity.GetZ()) + ")");
 }
