@@ -32,7 +32,8 @@ constexpr float MAX_ACCUMULATED = 0.25f;
 Core::Application::Application(AppParams _params) : 
 	m_window(std::make_unique<Platform::Window>(_params.window_params)), 
 	m_renderer(std::make_unique<Renderer::Renderer>(m_window.get(), _params.renderer_config)),
-	m_app_should_close(false), m_physics_engine(std::make_unique<Physics::PhysicsWorld>())
+	m_app_should_close(false), m_physics_engine(std::make_unique<Physics::PhysicsWorld>()),
+	m_transform_system(nullptr), m_camera_system(nullptr), m_rigidbody_system(nullptr), m_meshcollider_system(nullptr)
 {
 	current_application = this;
 }
@@ -54,21 +55,21 @@ void Core::Application::Init()
 	
 	m_physics_engine->Init();
 
-	TransformSystem* transform_system = new TransformSystem(); // TODO : Make this in a proper scope, destroy them at the end
-	transform_system->Register();
-	transform_system->Connect();
+	m_transform_system = new TransformSystem();
+	m_transform_system->Register();
+	m_transform_system->Connect();
 
-	CameraSystem* camera_system = new CameraSystem();
-	camera_system->Connect();
-	camera_system->Register();
+	m_camera_system = new CameraSystem();
+	m_camera_system->Connect();
+	m_camera_system->Register();
 
-	RigidBodySystem* rigidbody_system = new RigidBodySystem();
-	rigidbody_system->Connect();
-	rigidbody_system->ConnectPhysicsEvents();
-	rigidbody_system->Register();
+	m_rigidbody_system = new RigidBodySystem();
+	m_rigidbody_system->Connect();
+	m_rigidbody_system->ConnectPhysicsEvents();
+	m_rigidbody_system->Register();
 
-	MeshColliderSystem* mesh_collider_system = new MeshColliderSystem();
-	mesh_collider_system->Register();
+	m_meshcollider_system = new MeshColliderSystem();
+	m_meshcollider_system->Register();
 
 	for(Layer* l: m_layer_stack)
 	{
@@ -190,4 +191,9 @@ void Core::Application::OnClose()
 {
 	for (Layer* _layer : m_layer_stack)
 		_layer->OnDetach();
+
+	delete m_transform_system;
+	delete m_rigidbody_system;
+	delete m_meshcollider_system;
+	delete m_camera_system;
 }

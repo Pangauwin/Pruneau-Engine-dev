@@ -12,6 +12,11 @@
 
 namespace Core {
 
+class TransformSystem;
+class CameraSystem;
+class RigidBodySystem;
+class MeshColliderSystem;
+
 struct AppParams {
 	Platform::WindowParams window_params = {};
 	Renderer::RendererConfig renderer_config = {};
@@ -54,6 +59,11 @@ private:
 	bool m_app_should_close;
 
 	LayerStack m_layer_stack;
+
+	TransformSystem* m_transform_system;
+	CameraSystem* m_camera_system;
+	RigidBodySystem* m_rigidbody_system;
+	MeshColliderSystem* m_meshcollider_system;
 };
 
 }
