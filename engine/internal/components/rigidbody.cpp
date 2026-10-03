@@ -153,6 +153,9 @@ void Core::RigidBodySystem::OnSimulationBegin(const Physics::OnSimulationBegin& 
         Physics::Layers::MOVING
     );
 
+    _rb.body_settings->mOverrideMassProperties = JPH::EOverrideMassProperties::CalculateInertia;
+    _rb.body_settings->mMassPropertiesOverride.mMass = _rb.mass;
+
     if(!_rb.simulating)
     {
         if(_rb._body.IsInvalid())
